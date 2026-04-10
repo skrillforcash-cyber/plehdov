@@ -4,33 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VOD</title>
+    <title>CrW-Zone VOD</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --script: #ffffff;
             --primary: hsl(194, 92%, 47%);
             --bg-dark: #050505;
             --text-main: #ffffff;
             --glass-bg: rgba(20, 20, 20, 0.6);
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --focus-ring: 0 0 0 3px rgba(0,170,255,0.7);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        ::-webkit-scrollbar {
-            display: none;
-        }
-
-        html {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        ::-webkit-scrollbar { display: none; }
+        html { -ms-overflow-style: none; scrollbar-width: none; }
 
         body {
             background-color: var(--bg-dark);
@@ -38,10 +28,15 @@
             font-family: 'Outfit', sans-serif;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
             -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
             user-select: none;
         }
 
+        /* ── Focus ring ── */
         .focusable {
             outline: 3px solid transparent;
             outline-offset: 2px;
@@ -51,16 +46,16 @@
 
         .focusable:focus,
         .focusable.tv-focus {
-            outline: 5px solid var(--script) !important;
+            outline: 3px solid rgba(0,170,255,0.9) !important;
+            box-shadow: var(--focus-ring) !important;
             z-index: 50;
         }
 
+        /* ── Views ── */
         .view {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.4s ease;
@@ -68,44 +63,75 @@
             overflow-x: hidden;
         }
 
-        .view.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .view.active { opacity: 1; pointer-events: auto; }
 
         #view-catalog {
             background: var(--bg-dark);
-            overflow-y: auto;
-            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
         }
 
+        /* ── Header ── */
         header {
             position: relative;
-            top: 0;
-            z-index: 100;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
-            padding: 20px 4%;
+            top: 0; z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, transparent 100%);
+            padding: 16px 4%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
         }
 
-        #catalog-content,
-        #search-results {
-            position: relative;
-            z-index: 2;
+        /* ── CrW-Zone Logo ── */
+        .crw-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            flex-shrink: 0;
         }
 
+        .crw-logo-icon {
+            filter: drop-shadow(0 0 10px rgba(0,170,255,0.55));
+            flex-shrink: 0;
+        }
+
+        .crw-logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
+            gap: 1px;
+        }
+
+        .crw-logo-name {
+            font-size: 1.6rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #00aaff, #4dc4ff, #80e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.03em;
+            filter: drop-shadow(0 0 8px rgba(0,170,255,0.4));
+        }
+
+        .crw-logo-sub {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: rgba(77,196,255,0.6);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        /* ── Search ── */
         .search-box {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.08);
             border-radius: 30px;
             padding: 10px 20px;
             display: flex;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255,255,255,0.15);
             backdrop-filter: blur(10px);
             transition: var(--transition);
             width: 300px;
@@ -132,9 +158,13 @@
 
         .search-box:focus-within,
         .search-box.tv-focus-container {
-            outline: 5px solid var(--script) !important;
+            outline: 3px solid rgba(0,170,255,0.9) !important;
+            box-shadow: var(--focus-ring) !important;
             transform: scale(1.02);
         }
+
+        /* ── Catalog ── */
+        #catalog-content, #search-results { position: relative; z-index: 2; }
 
         .section-title {
             margin: 30px 4% 15px;
@@ -145,9 +175,7 @@
             gap: 10px;
         }
 
-        .section-title i {
-            color: var(--primary);
-        }
+        .section-title i { color: var(--primary); }
 
         .carousel {
             display: flex;
@@ -157,6 +185,7 @@
             scroll-behavior: smooth;
         }
 
+        /* ── Cards ── */
         .card-skeleton {
             min-width: 160px;
             height: 240px;
@@ -168,13 +197,8 @@
         }
 
         @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
-            }
-
-            100% {
-                background-position: -200% 0;
-            }
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         .card {
@@ -184,19 +208,25 @@
             position: relative;
             flex-shrink: 0;
             overflow: hidden;
+            border-radius: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .card.tv-focus, .card:focus {
+            transform: scale(1.06);
         }
 
         .card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
         .card .badge {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(0, 0, 0, 0.7);
+            top: 8px; left: 8px;
+            background: rgba(0,0,0,0.7);
             padding: 4px 8px;
             border-radius: 6px;
             font-size: 0.8rem;
@@ -207,9 +237,8 @@
 
         .card .title {
             position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            bottom: 0; width: 100%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
             padding: 30px 10px 10px;
             font-size: 0.9rem;
             font-weight: 600;
@@ -225,16 +254,13 @@
             padding: 20px 4%;
         }
 
-        #view-details {
-            background: var(--bg-dark);
-        }
+        /* ── Details ── */
+        #view-details { background: var(--bg-dark); }
 
         .backdrop {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 70vh;
+            top: 0; left: 0;
+            width: 100%; height: 70vh;
             object-fit: cover;
             z-index: -1;
             mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
@@ -254,8 +280,9 @@
 
         .details-poster {
             width: 300px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .details-info h1 {
@@ -263,7 +290,7 @@
             font-weight: 900;
             margin-bottom: 15px;
             line-height: 1.1;
-            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
         .meta {
@@ -277,10 +304,10 @@
         }
 
         .tag {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.1);
             padding: 5px 12px;
             border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255,255,255,0.2);
             backdrop-filter: blur(5px);
         }
 
@@ -290,7 +317,7 @@
             color: #ccc;
             max-width: 800px;
             margin-bottom: 30px;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
         }
 
         .btn-play {
@@ -304,7 +331,9 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 10px 20px rgba(229, 9, 20, 0.4);
+            box-shadow: 0 10px 20px rgba(0,170,255,0.3);
+            cursor: pointer;
+            transition: var(--transition);
         }
 
         .btn-play:focus,
@@ -312,8 +341,35 @@
             background: white;
             color: var(--primary);
             outline: none;
+            box-shadow: var(--focus-ring) !important;
         }
 
+        /* ── Info chips ── */
+        .info-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ddd;
+            backdrop-filter: blur(5px);
+        }
+
+        .info-chip i { color: var(--primary); font-size: 0.8rem; }
+
+        .info-chip.genre {
+            border-color: rgba(0,170,255,0.3);
+            background: rgba(0,170,255,0.08);
+            color: #a0d8ef;
+        }
+
+        .info-chip.genre i { color: #4dc4ff; }
+
+        /* ── Episodes ── */
         .episodes-section {
             max-width: 1400px;
             margin: 40px auto;
@@ -343,13 +399,15 @@
             cursor: pointer;
             min-width: 240px;
             font-weight: 800;
+            transition: var(--transition);
         }
 
         .season-select:focus,
         .season-select.tv-focus {
             border-color: var(--primary);
             outline: none;
-            background: rgba(229, 9, 20, 0.15);
+            background: rgba(0,170,255,0.1);
+            box-shadow: var(--focus-ring);
         }
 
         .season-select i {
@@ -366,9 +424,16 @@
         }
 
         .ep-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.05);
             overflow: hidden;
             border: 1px solid transparent;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .ep-card.tv-focus, .ep-card:focus {
+            border-color: rgba(0,170,255,0.6);
+            background: rgba(0,170,255,0.08);
         }
 
         .ep-thumb {
@@ -382,16 +447,12 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
-        .ep-info {
-            padding: 15px;
-        }
+        .ep-info { padding: 15px; }
 
-        .ep-title {
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
+        .ep-title { font-weight: 700; margin-bottom: 5px; }
 
         .ep-desc {
             font-size: 0.85rem;
@@ -402,30 +463,30 @@
             overflow: hidden;
         }
 
+        /* ── Back button ── */
         .back-btn-float {
             position: fixed;
-            top: 30px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.5);
-            width: 50px;
-            height: 50px;
+            top: 30px; left: 30px;
+            background: rgba(0,0,0,0.55);
+            width: 50px; height: 50px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255,255,255,0.2);
             color: white;
             z-index: 200;
             font-size: 1.2rem;
             backdrop-filter: blur(10px);
+            transition: var(--transition);
         }
 
+        /* ── VixSrc status ── */
         #vix-status {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            bottom: 20px; right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
             padding: 10px 16px;
             font-size: 0.8rem;
@@ -440,13 +501,10 @@
             pointer-events: none;
         }
 
-        #vix-status.visible {
-            opacity: 1;
-        }
+        #vix-status.visible { opacity: 1; }
 
         #vix-status .dot {
-            width: 8px;
-            height: 8px;
+            width: 8px; height: 8px;
             border-radius: 50%;
             background: #888;
             flex-shrink: 0;
@@ -457,55 +515,27 @@
             animation: pulse-dot 1s ease-in-out infinite;
         }
 
-        #vix-status .dot.ok {
-            background: #46d369;
-        }
-
-        #vix-status .dot.error {
-            background: #e50914;
-        }
+        #vix-status .dot.ok   { background: #46d369; }
+        #vix-status .dot.error { background: #e50914; }
 
         @keyframes pulse-dot {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.3;
-            }
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
         }
 
-        .info-chip {
-            display: inline-flex;
+        /* ── Resume dialog ── */
+        #resume-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #ddd;
-            backdrop-filter: blur(5px);
+            justify-content: center;
         }
 
-        .info-chip i {
-            color: var(--primary);
-            font-size: 0.8rem;
-        }
-
-        .info-chip.genre {
-            border-color: rgba(0, 170, 255, 0.3);
-            background: rgba(0, 170, 255, 0.08);
-            color: #a0d8ef;
-        }
-
-        .info-chip.genre i {
-            color: #4dc4ff;
-        }
-
+        /* ── Responsive ── */
         @media (max-width: 900px) {
             .details-content {
                 flex-direction: column;
@@ -514,129 +544,52 @@
                 padding-top: 100px;
                 gap: 20px;
             }
-
-            .details-poster {
-                width: 220px;
-            }
-
-            .meta {
-                justify-content: center;
-            }
-
-            .details-info h1 {
-                font-size: 2.5rem;
-            }
+            .details-poster { width: 220px; }
+            .meta { justify-content: center; }
+            .details-info h1 { font-size: 2.5rem; }
         }
 
         @media (max-width: 600px) {
-            header {
-                flex-direction: column;
-                padding: 15px;
-            }
-
-            .search-box {
-                width: 100%;
-            }
-
-            .logo {
-                font-size: 1.8rem;
-            }
-
-            .section-title {
-                font-size: 1.2rem;
-                margin: 20px 4% 10px;
-            }
-
-            .card {
-                min-width: 110px;
-                height: 165px;
-                border-radius: 8px;
-            }
-
-            .card-skeleton {
-                min-width: 110px;
-                height: 165px;
-            }
-
-            #search-results {
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-                gap: 15px;
-            }
-
-            .details-poster {
-                width: 160px;
-            }
-
-            .details-info h1 {
-                font-size: 2rem;
-            }
-
-            .overview {
-                font-size: 0.95rem;
-            }
-
-            .btn-play {
-                width: 100%;
-                justify-content: center;
-                padding: 15px 20px;
-                font-size: 1rem;
-            }
-
-            .episode-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
-            }
-
-            .back-btn-float {
-                top: 15px;
-                left: 15px;
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-        }
-
-        body {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        /* ── Resume dialog ── */
-        #resume-dialog-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            header { flex-direction: column; padding: 15px; }
+            .search-box { width: 100%; }
+            .crw-logo-name { font-size: 1.3rem; }
+            .section-title { font-size: 1.2rem; margin: 20px 4% 10px; }
+            .card { min-width: 110px; height: 165px; border-radius: 6px; }
+            .card-skeleton { min-width: 110px; height: 165px; }
+            #search-results { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; }
+            .details-poster { width: 160px; }
+            .details-info h1 { font-size: 2rem; }
+            .overview { font-size: 0.95rem; }
+            .btn-play { width: 100%; justify-content: center; padding: 15px 20px; font-size: 1rem; }
+            .episode-grid { grid-template-columns: 1fr; }
+            .back-btn-float { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1rem; }
         }
     </style>
 </head>
 
 <body>
 
+    <!-- ══ CATALOG VIEW ══════════════════════════════════════════════════════ -->
     <div id="view-catalog" class="view active">
         <div id="catalog-bg" style="
             position: fixed; inset: 0; z-index: 0;
             background-size: cover; background-position: center top;
             transition: background-image 0.6s ease, opacity 0.6s ease;
-            opacity: 0; pointer-events: none;
-        "></div>
+            opacity: 0; pointer-events: none;">
+        </div>
         <div id="catalog-bg-overlay" style="
             position: fixed; inset: 0; z-index: 1; pointer-events: none;
-            background: linear-gradient(to right, rgba(5,5,5,0.85) 30%, rgba(5,5,5,0.4) 100%),
-                        linear-gradient(to top, rgba(5,5,5,1) 0%, transparent 40%);
-        "></div>
-        <header>
+            background:
+                linear-gradient(to right, rgba(5,5,5,0.88) 30%, rgba(5,5,5,0.4) 100%),
+                linear-gradient(to top,   rgba(5,5,5,1) 0%, transparent 40%);">
+        </div>
+
+        <header id="main-header">
+            <!-- Logo injected by JS -->
             <div class="search-box" id="search-box-container">
-                <i class="fas fa-search" style="color: #888;"></i>
-                <input type="text" id="search-input" class="focusable" placeholder="Cerca film o serie TV..."
-                    autocomplete="off">
+                <i class="fas fa-search" style="color:#888;"></i>
+                <input type="text" id="search-input" class="focusable"
+                       placeholder="Cerca film o serie TV..." autocomplete="off">
             </div>
         </header>
 
@@ -654,29 +607,33 @@
         <div id="search-results" style="display:none;"></div>
     </div>
 
+    <!-- ── VixSrc status badge ────────────────────────────────────────────── -->
     <div id="vix-status">
         <div class="dot loading" id="vix-dot"></div>
         <span id="vix-status-text">Verifica disponibilità...</span>
     </div>
 
+    <!-- ══ DETAILS VIEW ══════════════════════════════════════════════════════ -->
     <div id="view-details" class="view">
         <button class="back-btn-float focusable" id="btn-back-details" onclick="goBack()">
             <i class="fas fa-arrow-left"></i>
         </button>
-        <img id="dt-backdrop" class="backdrop" src="">
+        <img id="dt-backdrop" class="backdrop" src="" alt="">
 
         <div class="details-content">
-            <img id="dt-poster" class="details-poster" src="">
+            <img id="dt-poster" class="details-poster" src="" alt="">
             <div class="details-info">
                 <h1 id="dt-title">Titolo</h1>
                 <div class="meta">
-                    <span class="tag" style="color: #46d369;"><i class="fas fa-star"></i> <span
-                            id="dt-rating">0.0</span></span>
+                    <span class="tag" style="color:#46d369;">
+                        <i class="fas fa-star"></i> <span id="dt-rating">0.0</span>
+                    </span>
                     <span class="tag" id="dt-year">2024</span>
                     <span class="tag" id="dt-type">Film</span>
                 </div>
                 <p class="overview" id="dt-overview">Trama non disponibile.</p>
-                <div id="dt-extra-info" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:25px;"></div>
+                <div id="dt-extra-info"
+                     style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:25px;"></div>
                 <div id="action-container"></div>
             </div>
         </div>
@@ -690,591 +647,689 @@
         </div>
     </div>
 
+    <!-- ── Resume toast ──────────────────────────────────────────────────── -->
+    <div id="resume-toast" style="
+        position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+        background:rgba(10,10,10,0.92); border:1px solid rgba(0,170,255,0.35);
+        border-radius:10px; padding:11px 22px; font-size:0.85rem; color:#4dc4ff;
+        backdrop-filter:blur(12px); opacity:0; pointer-events:none;
+        transition:opacity 0.4s ease; white-space:nowrap;
+        z-index:99999; display:flex; align-items:center; gap:8px;">
+        <i class="fas fa-bookmark"></i><span id="resume-toast-text"></span>
+    </div>
+
     <script>
-        const API_KEY = '56dd0eb5ddacfa471fda68c68a550eb1';
-        const IMG_BASE = 'https://image.tmdb.org/t/p/';
+    'use strict';
 
-        // ─── Resume watching ──────────────────────────────────────────────────────────
-        let playerStartTime = null;
-        let playerCurrentKey = null;
+    /* ════════════════════════════════════════════════════════════════════════
+       CONSTANTS
+    ════════════════════════════════════════════════════════════════════════ */
+    const API_KEY  = '56dd0eb5ddacfa471fda68c68a550eb1';
+    const IMG_BASE = 'https://image.tmdb.org/t/p/';
 
-        function _resumeKey(type, id, season, episode) {
-            return type === 'movie'
-                ? `nz_r_movie_${id}`
-                : `nz_r_tv_${id}_s${season}_e${episode}`;
-        }
+    /* ════════════════════════════════════════════════════════════════════════
+       LOGO
+    ════════════════════════════════════════════════════════════════════════ */
+    function createLogo() {
+        const header = document.getElementById('main-header');
+        if (!header) return;
 
-        function _getResume(key) {
-            try {
-                const d = JSON.parse(localStorage.getItem(key) || 'null');
-                if (!d) return 0;
-                if (Date.now() - d.ts > 90 * 86400000) { localStorage.removeItem(key); return 0; }
-                return d.t || 0;
-            } catch (e) { return 0; }
-        }
+        const logoEl = document.createElement('div');
+        logoEl.className = 'crw-logo';
+        logoEl.setAttribute('aria-label', 'CrW-Zone VOD');
+        logoEl.innerHTML = `
+            <svg class="crw-logo-icon" width="44" height="44" viewBox="0 0 44 44"
+                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="crw-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%"   stop-color="#00aaff"/>
+                        <stop offset="100%" stop-color="#80e0ff"/>
+                    </linearGradient>
+                    <filter id="crw-glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                <!-- Outer frame -->
+                <rect x="1.5" y="1.5" width="41" height="41" rx="10"
+                      fill="rgba(0,170,255,0.12)" stroke="url(#crw-grad)" stroke-width="1.5"/>
+                <!-- Film perforations – left -->
+                <rect x="1.5" y="8"  width="5" height="4.5" rx="1.2" fill="url(#crw-grad)" opacity="0.65"/>
+                <rect x="1.5" y="19" width="5" height="4.5" rx="1.2" fill="url(#crw-grad)" opacity="0.65"/>
+                <rect x="1.5" y="30" width="5" height="4.5" rx="1.2" fill="url(#crw-grad)" opacity="0.65"/>
+                <!-- Film perforations – right -->
+                <rect x="37.5" y="8"  width="5" height="4.5" rx="1.2" fill="url(#crw-grad)" opacity="0.65"/>
+                <rect x="37.5" y="19" width="5" height="4.5" rx="1.2" fill="url(#crw-grad)" opacity="0.65"/>
+                <rect x="37.5" y="30" width="5" height="4.5" rx="1.2" fill="url(#crw-grad)" opacity="0.65"/>
+                <!-- Divider lines -->
+                <line x1="8" y1="2" x2="8" y2="42" stroke="url(#crw-grad)" stroke-width="0.8" opacity="0.4"/>
+                <line x1="36" y1="2" x2="36" y2="42" stroke="url(#crw-grad)" stroke-width="0.8" opacity="0.4"/>
+                <!-- Play triangle -->
+                <polygon points="16,12 16,32 33,22" fill="url(#crw-grad)" filter="url(#crw-glow)"/>
+            </svg>
+            <div class="crw-logo-text">
+                <span class="crw-logo-name">CrW-Zone</span>
+                <span class="crw-logo-sub">Video On Demand</span>
+            </div>
+        `;
+        header.insertBefore(logoEl, header.firstChild);
+    }
 
-        function _saveResume(key, startedAt) {
-            if (!key || !startedAt) return;
-            const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-            if (elapsed < 10) return;
-            try {
-                const prev = _getResume(key);
-                const newT = prev + elapsed;
-                localStorage.setItem(key, JSON.stringify({ t: newT, ts: Date.now() }));
-                _showResumeToast(`Salvato: ${_fmtTime(newT)}`);
-            } catch (e) { }
-        }
+    /* ════════════════════════════════════════════════════════════════════════
+       LOCALSTORAGE KEYS  (crw_ prefix; migrates old nz_ keys on first run)
+    ════════════════════════════════════════════════════════════════════════ */
+    const RECENT_KEY = 'crw_recent';
+    const RECENT_MAX = 20;
 
-        function _clearResume(key) {
-            try { localStorage.removeItem(key); } catch (e) { }
-        }
-
-        // ─── Cronologia recenti ──────────────────────────────────────────────────────
-        const RECENT_KEY = 'nz_recent';
-        const RECENT_MAX = 20;
-
-        function saveRecent(entry) {
-            // entry = { id, type, name, poster, backdrop, season, episode }
-            try {
-                let list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
-                const dedupKey = entry.type === 'movie'
-                    ? `movie_${entry.id}`
-                    : `tv_${entry.id}_s${entry.season}_e${entry.episode}`;
-                list = list.filter(r => r._key !== dedupKey);
-                entry._key = dedupKey;
-                entry.ts = Date.now();
-                list.unshift(entry);
-                if (list.length > RECENT_MAX) list = list.slice(0, RECENT_MAX);
-                localStorage.setItem(RECENT_KEY, JSON.stringify(list));
-            } catch (e) { }
-        }
-
-        function getRecents() {
-            try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); }
-            catch (e) { return []; }
-        }
-
-        // ── FIX 2c: usa item.backdrop (invece di "") per il data-backdrop delle card recenti ──
-        function renderRecentCarousel() {
-            const list = getRecents();
-            const section = document.getElementById('section-recenti');
-            const carousel = document.getElementById('carousel-recenti');
-            if (!section || !carousel) return;
-
-            if (list.length === 0) {
-                section.style.display = 'none';
-                return;
-            }
-            section.style.display = 'block';
-
-            carousel.innerHTML = list.map(item => {
-                const label = item.type === 'movie'
-                    ? item.name
-                    : `${item.name} · S${item.season} E${item.episode}`;
-                const resumeKey = item.type === 'movie'
-                    ? _resumeKey('movie', item.id, 1, 1)
-                    : _resumeKey('tv', item.id, item.season, item.episode);
-                const t = _getResume(resumeKey);
-                const badge = t > 10
-                    ? `<div class="badge" style="color:#4dc4ff;"><i class="fas fa-history"></i> ${_fmtTime(t)}</div>`
-                    : `<div class="badge"><i class="fas fa-clock"></i></div>`;
-
-                // FIX 2c: data-backdrop ora usa item.backdrop salvato invece di stringa vuota
-                return `
-        <div class="card focusable" tabindex="0"
-             data-id="${item.id}"
-             data-type="${item.type}"
-             data-backdrop="${item.backdrop || ''}"
-             onclick="openDetails('${item.id}', '${item.type}')">
-            ${badge}
-            <img src="${IMG_BASE}w342${item.poster}" loading="lazy">
-            <div class="title">${label}</div>
-        </div>`;
-            }).join('');
-        }
-
-        function _fmtTime(s) {
-            s = Math.floor(s);
-            const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-            return h > 0
-                ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
-                : `${m}:${String(sec).padStart(2, '0')}`;
-        }
-
-        let _resumeToastTimer;
-        function _showResumeToast(text) {
-            const t = document.getElementById('resume-toast');
-            const l = document.getElementById('resume-toast-text');
-            if (!t || !l) return;
-            l.textContent = text;
-            t.style.opacity = '1';
-            clearTimeout(_resumeToastTimer);
-            _resumeToastTimer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
-        }
-
-        // ─── VixSrc availability ─────────────────────────────────────────────────────
-        let vixAvailableMovies = [];
-        let vixAvailableShows = [];
-        let vixAvailabilityReady = false;
-        let vixFetchFailed = false;
-
-        function proxy(url) {
-            return `https://proxy.alemagno1994alex.workers.dev/?url=${encodeURIComponent(url)}`;
-        }
-
-        function setVixStatus(state, text) {
-            const badge = document.getElementById('vix-status');
-            const dot = document.getElementById('vix-dot');
-            const label = document.getElementById('vix-status-text');
-            dot.className = 'dot ' + state;
-            label.textContent = text;
-            badge.classList.add('visible');
-            if (state !== 'loading') setTimeout(() => badge.classList.remove('visible'), 4000);
-        }
-
-        async function fetchVixAvailability() {
-            if (vixAvailableMovies.length > 0 && vixAvailableShows.length > 0) {
-                vixAvailabilityReady = true;
-                return;
-            }
-            setVixStatus('loading', 'Verifica disponibilità...');
-            try {
-                const res1 = await fetch(proxy('https://vixsrc.to/api/list/movie/?lang=it'), { signal: AbortSignal.timeout(10000) });
-                if (!res1.ok) throw new Error(`Movie list HTTP ${res1.status}`);
-                const movieData = await res1.json();
-                const movieItems = Array.isArray(movieData) ? movieData : (movieData.results || movieData.data || []);
-                vixAvailableMovies = movieItems.map(i => i.tmdb_id ?? i.tmdbId ?? i.tmdb ?? i.id ?? null).filter(id => id !== null).map(Number);
-
-                const res2 = await fetch(proxy('https://vixsrc.to/api/list/tv/?lang=it'), { signal: AbortSignal.timeout(10000) });
-                if (!res2.ok) throw new Error(`TV list HTTP ${res2.status}`);
-                const tvData = await res2.json();
-                const tvItems = Array.isArray(tvData) ? tvData : (tvData.results || tvData.data || []);
-                vixAvailableShows = tvItems.map(i => i.tmdb_id ?? i.tmdbId ?? i.tmdb ?? i.id ?? null).filter(id => id !== null).map(Number);
-
-                vixAvailabilityReady = true;
-                vixFetchFailed = false;
-                setVixStatus('ok', `${vixAvailableMovies.length} film · ${vixAvailableShows.length} serie`);
-            } catch (err) {
-                console.warn('[VixSrc] Impossibile recuperare la lista:', err.message);
-                vixFetchFailed = true;
-                vixAvailabilityReady = true;
-                setVixStatus('error', 'Filtro non disponibile – mostro tutto');
-            }
-        }
-
-        function isAvailableOnVix(id, mediaType) {
-            if (vixFetchFailed) return true;
-            if (!vixAvailabilityReady) return true;
-            const numId = Number(id);
-            if (mediaType === 'movie') return vixAvailableMovies.length === 0 || vixAvailableMovies.includes(numId);
-            else return vixAvailableShows.length === 0 || vixAvailableShows.includes(numId);
-        }
-
-        // ─── App state ───────────────────────────────────────────────────────────────
-        let viewStack = ['catalog'];
-        let activeItemData = null;
-        let currentSeasons = [];
-        let currentSeasonIndex = 0;
-        let currentTvId = null;
-        let catalogScrollPos = 0;
-
-        // ─── Dialog focus trap ───────────────────────────────────────────────────────
-        let activeDialog = null;
-
-        function openDialog(overlayEl, focusFirstId) {
-            activeDialog = overlayEl;
-            document.body.appendChild(overlayEl);
-            setTimeout(() => {
-                const btn = focusFirstId ? document.getElementById(focusFirstId) : overlayEl.querySelector('.focusable');
-                if (btn) setTvFocusInDialog(btn);
-            }, 50);
-        }
-
-        function closeDialog() {
-            if (activeDialog && activeDialog.parentNode) {
-                activeDialog.parentNode.removeChild(activeDialog);
-            }
-            activeDialog = null;
-        }
-
-        function setTvFocusInDialog(element) {
-            if (!element) return;
-            document.querySelectorAll('.tv-focus, .tv-focus-container').forEach(el => {
-                el.classList.remove('tv-focus');
-                el.classList.remove('tv-focus-container');
-            });
-            element.focus();
-            element.classList.add('tv-focus');
-        }
-
-        function moveFocusInDialog(direction) {
-            if (!activeDialog) return;
-            const focusables = Array.from(activeDialog.querySelectorAll('.focusable')).filter(el => {
-                const r = el.getBoundingClientRect();
-                return r.width > 0 && r.height > 0;
-            });
-            if (focusables.length === 0) return;
-
-            const current = activeDialog.querySelector('.tv-focus') || document.activeElement;
-            const currentIndex = focusables.indexOf(current);
-
-            let nextIndex;
-            if (direction === 'DOWN' || direction === 'RIGHT') {
-                nextIndex = (currentIndex + 1) % focusables.length;
-            } else {
-                nextIndex = (currentIndex - 1 + focusables.length) % focusables.length;
-            }
-            setTvFocusInDialog(focusables[nextIndex]);
-        }
-
-        // ── FIX 1: al ritorno al catalogo, ripristina lo sfondo dalla card focalizzata ──
-        function switchView(viewName) {
-            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-            document.getElementById(`view-${viewName}`).classList.add('active');
-
-            if (viewName === 'catalog') {
-                setTimeout(() => {
-                    document.getElementById('view-catalog').scrollTop = catalogScrollPos;
-                    const lastFocused = document.querySelector('#carousel-movies .card.focusable');
-                    if (lastFocused) {
-                        setTvFocus(lastFocused);
-                        // FIX 1: aggiorna lo sfondo con il backdrop della card focalizzata
-                        updateCatalogBg(lastFocused.getAttribute('data-backdrop'));
+    function migrateStorage() {
+        try {
+            const keys = Object.keys(localStorage);
+            keys.forEach(k => {
+                if (k.startsWith('nz_')) {
+                    const newKey = k.replace(/^nz_/, 'crw_');
+                    if (!localStorage.getItem(newKey)) {
+                        localStorage.setItem(newKey, localStorage.getItem(k));
                     }
-                }, 100);
-            } else if (viewName === 'details') {
-                document.getElementById('view-details').scrollTop = 0;
-                setTimeout(() => {
-                    const playBtn = document.querySelector('.btn-play');
-                    const seasonSel = document.getElementById('season-selector');
-                    const target = playBtn || (seasonSel && seasonSel.style.display !== 'none' ? seasonSel : null) || document.getElementById('btn-back-details');
-                    setTvFocus(target);
-                }, 100);
-            }
-        }
-
-        function navigateTo(viewName) {
-            if (viewStack[viewStack.length - 1] === 'catalog') {
-                catalogScrollPos = document.getElementById('view-catalog').scrollTop;
-            }
-            if (viewStack[viewStack.length - 1] !== viewName) viewStack.push(viewName);
-            switchView(viewName);
-        }
-
-        // ─── Apre il player in player.html ──────────────────────────────────────────
-        function startPlayer(type, id, season = 1, episode = 1) {
-            const key = _resumeKey(type, id, season, episode);
-            playerCurrentKey = key;
-            const resumeAt = _getResume(key);
-            playerStartTime = Date.now();
-
-            if (activeItemData) {
-                sessionStorage.setItem('returnState', JSON.stringify({
-                    view: 'details',
-                    id: activeItemData.id,
-                    type: activeItemData.media_type,
-                    detailsScrollTop: document.getElementById('view-details').scrollTop
-                }));
-            }
-
-            let url = `player.html?type=${type}&id=${id}`;
-            if (type === 'tv') url += `&season=${season}&episode=${episode}`;
-            if (resumeAt > 10) url += `&startAt=${resumeAt}`;
-            sessionStorage.setItem('resumeSession', JSON.stringify({
-                key: key,
-                startedAt: Date.now()
-            }));
-            window.location.href = url;
-        }
-
-        // ─── Stagioni ────────────────────────────────────────────────────────────────
-        function changeSeason(offset) {
-            let newIndex = currentSeasonIndex + offset;
-            if (newIndex >= 0 && newIndex < currentSeasons.length) {
-                currentSeasonIndex = newIndex;
-                updateSeasonDisplay();
-                loadEpisodes(currentTvId, currentSeasons[currentSeasonIndex].season_number);
-            }
-        }
-
-        function updateSeasonDisplay() {
-            const selector = document.getElementById('season-selector');
-            selector.style.display = 'flex';
-            const sName = currentSeasons[currentSeasonIndex].name || `Stagione ${currentSeasons[currentSeasonIndex].season_number}`;
-            const leftOp = currentSeasonIndex > 0 ? '1' : '0.2';
-            const rightOp = currentSeasonIndex < currentSeasons.length - 1 ? '1' : '0.2';
-            selector.innerHTML = `
-                <i class="fas fa-chevron-left" style="opacity:${leftOp}; padding:10px;" onclick="event.stopPropagation(); changeSeason(-1)"></i>
-                <span style="min-width:130px; text-align:center;">${sName}</span>
-                <i class="fas fa-chevron-right" style="opacity:${rightOp}; padding:10px;" onclick="event.stopPropagation(); changeSeason(1)"></i>
-            `;
-        }
-
-        // ─── Focus management ────────────────────────────────────────────────────────
-        function getFocusableElements() {
-            return Array.from(document.querySelectorAll('.view.active .focusable')).filter(el => {
-                const rect = el.getBoundingClientRect();
-                return rect.width > 0 && rect.height > 0 &&
-                    window.getComputedStyle(el).visibility !== 'hidden' &&
-                    window.getComputedStyle(el).display !== 'none';
+                    localStorage.removeItem(k);
+                }
             });
-        }
+        } catch (e) { /* ignore */ }
+    }
 
-        function setTvFocus(element) {
-            if (!element) return;
-            document.querySelectorAll('.tv-focus, .tv-focus-container').forEach(el => {
-                el.classList.remove('tv-focus');
-                el.classList.remove('tv-focus-container');
-            });
-            element.focus();
-            element.classList.add('tv-focus');
-            if (element.id === 'search-input') {
-                document.getElementById('search-box-container').classList.add('tv-focus-container');
-            }
-            if (viewStack[viewStack.length - 1] === 'catalog' && element.classList.contains('card')) {
+    function _resumeKey(type, id, season, episode) {
+        return type === 'movie'
+            ? `crw_r_movie_${id}`
+            : `crw_r_tv_${id}_s${season}_e${episode}`;
+    }
+
+    function _getResume(key) {
+        try {
+            const d = JSON.parse(localStorage.getItem(key) || 'null');
+            if (!d) return 0;
+            if (Date.now() - d.ts > 90 * 86400000) { localStorage.removeItem(key); return 0; }
+            return d.t || 0;
+        } catch (e) { return 0; }
+    }
+
+    function _saveResume(key, startedAt) {
+        if (!key || !startedAt) return;
+        const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+        if (elapsed < 10) return;
+        try {
+            const prev  = _getResume(key);
+            const newT  = prev + elapsed;
+            localStorage.setItem(key, JSON.stringify({ t: newT, ts: Date.now() }));
+            _showResumeToast(`Salvato: ${_fmtTime(newT)}`);
+        } catch (e) { /* ignore */ }
+    }
+
+    function _clearResume(key) {
+        try { localStorage.removeItem(key); } catch (e) { /* ignore */ }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       RECENTI
+    ════════════════════════════════════════════════════════════════════════ */
+    function saveRecent(entry) {
+        try {
+            let list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+            const dedupKey = entry.type === 'movie'
+                ? `movie_${entry.id}`
+                : `tv_${entry.id}_s${entry.season}_e${entry.episode}`;
+            list = list.filter(r => r._key !== dedupKey);
+            entry._key = dedupKey;
+            entry.ts = Date.now();
+            list.unshift(entry);
+            if (list.length > RECENT_MAX) list = list.slice(0, RECENT_MAX);
+            localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+        } catch (e) { /* ignore */ }
+    }
+
+    function getRecents() {
+        try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); }
+        catch (e) { return []; }
+    }
+
+    function renderRecentCarousel() {
+        const list     = getRecents();
+        const section  = document.getElementById('section-recenti');
+        const carousel = document.getElementById('carousel-recenti');
+        if (!section || !carousel) return;
+        if (list.length === 0) { section.style.display = 'none'; return; }
+
+        section.style.display = 'block';
+        carousel.innerHTML = list.map(item => {
+            const label = item.type === 'movie'
+                ? item.name
+                : `${item.name} · S${item.season} E${item.episode}`;
+            const resumeKey = item.type === 'movie'
+                ? _resumeKey('movie', item.id, 1, 1)
+                : _resumeKey('tv', item.id, item.season, item.episode);
+            const t     = _getResume(resumeKey);
+            const badge = t > 10
+                ? `<div class="badge" style="color:#4dc4ff;"><i class="fas fa-history"></i> ${_fmtTime(t)}</div>`
+                : `<div class="badge"><i class="fas fa-clock"></i></div>`;
+
+            return `
+            <div class="card focusable" tabindex="0"
+                 data-id="${item.id}" data-type="${item.type}"
+                 data-backdrop="${item.backdrop || ''}"
+                 onclick="openDetails('${item.id}','${item.type}')">
+                ${badge}
+                <img src="${IMG_BASE}w342${item.poster}" loading="lazy" alt="${label}">
+                <div class="title">${label}</div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       UTILS
+    ════════════════════════════════════════════════════════════════════════ */
+    function _fmtTime(s) {
+        s = Math.floor(s);
+        const h   = Math.floor(s / 3600);
+        const m   = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        return h > 0
+            ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
+            : `${m}:${String(sec).padStart(2,'0')}`;
+    }
+
+    let _resumeToastTimer;
+    function _showResumeToast(text) {
+        const t = document.getElementById('resume-toast');
+        const l = document.getElementById('resume-toast-text');
+        if (!t || !l) return;
+        l.textContent = text;
+        t.style.opacity = '1';
+        clearTimeout(_resumeToastTimer);
+        _resumeToastTimer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       VIX SRC AVAILABILITY
+    ════════════════════════════════════════════════════════════════════════ */
+    let vixAvailableMovies    = [];
+    let vixAvailableShows     = [];
+    let vixAvailabilityReady  = false;
+    let vixFetchFailed        = false;
+
+    function proxy(url) {
+        return `https://proxy.alemagno1994alex.workers.dev/?url=${encodeURIComponent(url)}`;
+    }
+
+    function setVixStatus(state, text) {
+        const badge = document.getElementById('vix-status');
+        const dot   = document.getElementById('vix-dot');
+        const label = document.getElementById('vix-status-text');
+        dot.className   = 'dot ' + state;
+        label.textContent = text;
+        badge.classList.add('visible');
+        if (state !== 'loading') setTimeout(() => badge.classList.remove('visible'), 4000);
+    }
+
+    async function fetchVixAvailability() {
+        if (vixAvailableMovies.length > 0 && vixAvailableShows.length > 0) {
+            vixAvailabilityReady = true;
+            return;
+        }
+        setVixStatus('loading', 'Verifica disponibilità...');
+        try {
+            const [res1, res2] = await Promise.all([
+                fetch(proxy('https://vixsrc.to/api/list/movie/?lang=it'), { signal: AbortSignal.timeout(10000) }),
+                fetch(proxy('https://vixsrc.to/api/list/tv/?lang=it'),    { signal: AbortSignal.timeout(10000) })
+            ]);
+            if (!res1.ok) throw new Error(`Movie list HTTP ${res1.status}`);
+            if (!res2.ok) throw new Error(`TV list HTTP ${res2.status}`);
+
+            const extractIds = data =>
+                (Array.isArray(data) ? data : (data.results || data.data || []))
+                    .map(i => i.tmdb_id ?? i.tmdbId ?? i.tmdb ?? i.id ?? null)
+                    .filter(id => id !== null)
+                    .map(Number);
+
+            vixAvailableMovies   = extractIds(await res1.json());
+            vixAvailableShows    = extractIds(await res2.json());
+            vixAvailabilityReady = true;
+            vixFetchFailed       = false;
+            setVixStatus('ok', `${vixAvailableMovies.length} film · ${vixAvailableShows.length} serie`);
+        } catch (err) {
+            console.warn('[CrW-Zone] Filtro non disponibile:', err.message);
+            vixFetchFailed       = true;
+            vixAvailabilityReady = true;
+            setVixStatus('error', 'Filtro non disponibile – mostro tutto');
+        }
+    }
+
+    function isAvailableOnVix(id, mediaType) {
+        if (vixFetchFailed || !vixAvailabilityReady) return true;
+        const numId = Number(id);
+        return mediaType === 'movie'
+            ? (vixAvailableMovies.length === 0 || vixAvailableMovies.includes(numId))
+            : (vixAvailableShows.length  === 0 || vixAvailableShows.includes(numId));
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       APP STATE
+    ════════════════════════════════════════════════════════════════════════ */
+    let viewStack          = ['catalog'];
+    let activeItemData     = null;
+    let currentSeasons     = [];
+    let currentSeasonIndex = 0;
+    let currentTvId        = null;
+    let catalogScrollPos   = 0;
+    let lastFocusedCardData = null; // { id, type, carouselId } – card that opened details
+
+    /* ════════════════════════════════════════════════════════════════════════
+       CATALOG BACKGROUND
+    ════════════════════════════════════════════════════════════════════════ */
+    function updateCatalogBg(backdropPath) {
+        const bg = document.getElementById('catalog-bg');
+        if (!bg) return;
+        if (!backdropPath) { bg.style.opacity = '0'; return; }
+        const url = `${IMG_BASE}original${backdropPath}`;
+        const img = new Image();
+        img.onload = () => {
+            bg.style.backgroundImage = `url('${url}')`;
+            bg.style.opacity = '1';
+        };
+        img.src = url;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       DIALOG FOCUS TRAP
+    ════════════════════════════════════════════════════════════════════════ */
+    let activeDialog = null;
+
+    function openDialog(overlayEl, focusFirstId) {
+        activeDialog = overlayEl;
+        document.body.appendChild(overlayEl);
+        setTimeout(() => {
+            const btn = focusFirstId
+                ? document.getElementById(focusFirstId)
+                : overlayEl.querySelector('.focusable');
+            if (btn) setTvFocusInDialog(btn);
+        }, 50);
+    }
+
+    function closeDialog() {
+        if (activeDialog?.parentNode) activeDialog.parentNode.removeChild(activeDialog);
+        activeDialog = null;
+    }
+
+    function setTvFocusInDialog(element) {
+        if (!element) return;
+        document.querySelectorAll('.tv-focus, .tv-focus-container').forEach(el => {
+            el.classList.remove('tv-focus', 'tv-focus-container');
+        });
+        element.focus();
+        element.classList.add('tv-focus');
+    }
+
+    function moveFocusInDialog(direction) {
+        if (!activeDialog) return;
+        const focusables = Array.from(activeDialog.querySelectorAll('.focusable'))
+            .filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+        if (!focusables.length) return;
+
+        const current      = activeDialog.querySelector('.tv-focus') || document.activeElement;
+        const currentIndex = focusables.indexOf(current);
+        const nextIndex = (direction === 'DOWN' || direction === 'RIGHT')
+            ? (currentIndex + 1) % focusables.length
+            : (currentIndex - 1 + focusables.length) % focusables.length;
+
+        setTvFocusInDialog(focusables[nextIndex]);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       FOCUS MANAGEMENT
+    ════════════════════════════════════════════════════════════════════════ */
+    function getFocusableElements() {
+        return Array.from(document.querySelectorAll('.view.active .focusable')).filter(el => {
+            const rect = el.getBoundingClientRect();
+            const cs   = window.getComputedStyle(el);
+            return rect.width > 0 && rect.height > 0
+                && cs.visibility !== 'hidden'
+                && cs.display    !== 'none';
+        });
+    }
+
+    function setTvFocus(element) {
+        if (!element) return;
+        document.querySelectorAll('.tv-focus, .tv-focus-container').forEach(el => {
+            el.classList.remove('tv-focus', 'tv-focus-container');
+        });
+        element.focus({ preventScroll: true });
+        element.classList.add('tv-focus');
+        if (element.id === 'search-input') {
+            document.getElementById('search-box-container').classList.add('tv-focus-container');
+        }
+        // Update catalog background when a card gets focus
+        if (viewStack[viewStack.length - 1] === 'catalog') {
+            if (element.classList.contains('card')) {
                 updateCatalogBg(element.getAttribute('data-backdrop'));
-            } else if (viewStack[viewStack.length - 1] === 'catalog' && !element.classList.contains('card')) {
+            } else {
                 updateCatalogBg(null);
             }
         }
+    }
 
-        function moveFocus(direction) {
-            if (activeDialog) {
-                moveFocusInDialog(direction);
+    function moveFocus(direction) {
+        if (activeDialog) { moveFocusInDialog(direction); return; }
+
+        const focusables   = getFocusableElements();
+        if (!focusables.length) return;
+        let current = document.querySelector('.tv-focus');
+        if (!current || window.getComputedStyle(current).display === 'none') {
+            current = document.activeElement;
+        }
+
+        // ── Season selector special handling ──────────────────────────────
+        if (current && current.id === 'season-selector') {
+            if (direction === 'LEFT')  { changeSeason(-1); return; }
+            if (direction === 'RIGHT') { changeSeason(1);  return; }
+            if (direction === 'UP') {
+                setTvFocus(document.getElementById('btn-back-details'));
+                document.getElementById('view-details').scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
+        }
 
-            const focusables = getFocusableElements();
-            if (focusables.length === 0) return;
-            let current = document.querySelector('.tv-focus');
-            if (!current || window.getComputedStyle(current).display === 'none') current = document.activeElement;
+        const isSearchInput = current && (current.id === 'search-input' || current.closest('#search-box-container'));
 
-            if (current.id === 'season-selector') {
-                if (direction === 'LEFT') { changeSeason(-1); return; }
-                if (direction === 'RIGHT') { changeSeason(1); return; }
-                if (direction === 'UP') {
-                    setTvFocus(document.getElementById('btn-back-details'));
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    return;
-                }
+        // ── DOWN from search input ────────────────────────────────────────
+        if (isSearchInput && direction === 'DOWN') {
+            const searchVisible = document.getElementById('search-results').style.display !== 'none';
+            const firstCard = searchVisible
+                ? document.querySelector('#search-results .card.focusable')
+                : (document.querySelector('#section-recenti:not([style*="display: none"]) .card.focusable')
+                   || document.querySelector('#carousel-movies .card.focusable'));
+            if (firstCard) {
+                setTvFocus(firstCard);
+                firstCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
+            return;
+        }
 
-            if (current.closest('header') && direction === 'DOWN') {
-                const firstCard = document.querySelector('.view.active .carousel .card.focusable') || document.querySelector('.view.active #search-results .card.focusable');
-                if (firstCard) { setTvFocus(firstCard); firstCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); return; }
-            }
-
-            if (current.classList.contains('card') && direction === 'UP') {
-                const rect = current.getBoundingClientRect();
-                if (rect.top < 350) { setTvFocus(document.getElementById('search-input')); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-            }
-
-            if (!focusables.includes(current)) { setTvFocus(focusables[0]); return; }
-
-            const rect = current.getBoundingClientRect();
-            const currentCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-            let bestNext = null;
-            let minDistance = Infinity;
-
-            focusables.forEach(el => {
-                if (el === current) return;
+        // ── UP from any card with no card above → back to search ──────────
+        if (current && current.classList.contains('card') && direction === 'UP') {
+            const currentCenterY = current.getBoundingClientRect().top + current.getBoundingClientRect().height / 2;
+            const hasCardAbove = focusables.some(el => {
+                if (el === current || !el.classList.contains('card')) return false;
                 const r = el.getBoundingClientRect();
-                const center = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-                let isValid = false;
-                if (direction === 'LEFT' && center.x < currentCenter.x - 10 && Math.abs(center.y - currentCenter.y) < r.height) isValid = true;
-                if (direction === 'RIGHT' && center.x > currentCenter.x + 10 && Math.abs(center.y - currentCenter.y) < r.height) isValid = true;
-                if (direction === 'UP' && center.y < currentCenter.y - 10) isValid = true;
-                if (direction === 'DOWN' && center.y > currentCenter.y + 10) isValid = true;
-                if (isValid) {
-                    const dx = center.x - currentCenter.x;
-                    const dy = center.y - currentCenter.y;
-                    const distance = (direction === 'LEFT' || direction === 'RIGHT')
-                        ? Math.abs(dx) + Math.abs(dy) * 5
-                        : Math.abs(dy) + Math.abs(dx) * 5;
-                    if (distance < minDistance) { minDistance = distance; bestNext = el; }
-                }
+                return (r.top + r.height / 2) < (currentCenterY - 10);
             });
-
-            if (bestNext) {
-                const carousel = bestNext.closest('.carousel');
-                if (carousel && (direction === 'LEFT' || direction === 'RIGHT')) {
-                    const cardRect = bestNext.getBoundingClientRect();
-                    const carRect = carousel.getBoundingClientRect();
-                    const scrollOffset = bestNext.offsetLeft - carousel.offsetLeft - (carRect.width / 2) + (cardRect.width / 2);
-                    carousel.scrollTo({ left: scrollOffset, behavior: 'smooth' });
-                }
-                setTvFocus(bestNext);
-                bestNext.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-            } else {
-                const activeView = document.querySelector('.view.active');
-                const SCROLL_STEP = 300;
-                if (direction === 'DOWN') activeView && activeView.scrollBy({ top: SCROLL_STEP, behavior: 'smooth' });
-                else if (direction === 'UP') activeView && activeView.scrollBy({ top: -SCROLL_STEP, behavior: 'smooth' });
-                else if (direction === 'RIGHT') { const fc = current.closest('.carousel'); if (fc) fc.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' }); }
-                else if (direction === 'LEFT') { const fc = current.closest('.carousel'); if (fc) fc.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' }); }
+            if (!hasCardAbove) {
+                setTvFocus(document.getElementById('search-input'));
+                document.getElementById('view-catalog').scrollTo({ top: 0, behavior: 'smooth' });
+                return;
             }
         }
 
-        // ─── Back ────────────────────────────────────────────────────────────────────
-        let backCooldown = false;
+        if (!focusables.includes(current)) { setTvFocus(focusables[0]); return; }
 
-        function safeGoBack() {
-            if (activeDialog) {
-                closeDialog();
-                setTimeout(() => {
-                    const firstEp = document.querySelector('.ep-card.focusable');
-                    if (firstEp) setTvFocus(firstEp);
-                }, 100);
-                return;
+        // ── Spatial navigation ────────────────────────────────────────────
+        const rect           = current.getBoundingClientRect();
+        const currentCenter  = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        let bestNext   = null;
+        let minDistance = Infinity;
+
+        focusables.forEach(el => {
+            if (el === current) return;
+            const r      = el.getBoundingClientRect();
+            const center = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+            let isValid  = false;
+            if (direction === 'LEFT'  && center.x < currentCenter.x - 10 && Math.abs(center.y - currentCenter.y) < r.height) isValid = true;
+            if (direction === 'RIGHT' && center.x > currentCenter.x + 10 && Math.abs(center.y - currentCenter.y) < r.height) isValid = true;
+            if (direction === 'UP'    && center.y < currentCenter.y - 10) isValid = true;
+            if (direction === 'DOWN'  && center.y > currentCenter.y + 10) isValid = true;
+            if (!isValid) return;
+            const dx = center.x - currentCenter.x;
+            const dy = center.y - currentCenter.y;
+            const distance = (direction === 'LEFT' || direction === 'RIGHT')
+                ? Math.abs(dx) + Math.abs(dy) * 5
+                : Math.abs(dy) + Math.abs(dx) * 5;
+            if (distance < minDistance) { minDistance = distance; bestNext = el; }
+        });
+
+        if (bestNext) {
+            const carousel = bestNext.closest('.carousel');
+            if (carousel && (direction === 'LEFT' || direction === 'RIGHT')) {
+                const cardRect  = bestNext.getBoundingClientRect();
+                const carRect   = carousel.getBoundingClientRect();
+                const scrollOff = bestNext.offsetLeft - carousel.offsetLeft - (carRect.width / 2) + (cardRect.width / 2);
+                carousel.scrollTo({ left: scrollOff, behavior: 'smooth' });
             }
-
-            if (backCooldown) return;
-            backCooldown = true;
-            setTimeout(() => { backCooldown = false; }, 1000);
-
+            setTvFocus(bestNext);
+            bestNext.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        } else {
             const activeView = document.querySelector('.view.active');
-            const activeId = activeView ? activeView.id : '';
+            const STEP = 300;
+            if      (direction === 'DOWN')  activeView?.scrollBy({ top:  STEP, behavior: 'smooth' });
+            else if (direction === 'UP')    activeView?.scrollBy({ top: -STEP, behavior: 'smooth' });
+            else if (direction === 'RIGHT') current.closest('.carousel')?.scrollBy({ left:  STEP, behavior: 'smooth' });
+            else if (direction === 'LEFT')  current.closest('.carousel')?.scrollBy({ left: -STEP, behavior: 'smooth' });
+        }
+    }
 
-            if (activeId === 'view-details') {
-                document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-                document.getElementById('view-catalog').classList.add('active');
-                setTimeout(() => {
-                    document.getElementById('view-catalog').scrollTop = catalogScrollPos;
-                    const lastFocused = document.querySelector('#carousel-movies .card.focusable');
-                    if (lastFocused) {
-                        setTvFocus(lastFocused);
-                        // FIX 1 (anche qui): ripristina sfondo al back manuale
-                        updateCatalogBg(lastFocused.getAttribute('data-backdrop'));
-                    }
-                }, 100);
-                return;
+    /* ════════════════════════════════════════════════════════════════════════
+       VIEW NAVIGATION
+    ════════════════════════════════════════════════════════════════════════ */
+    // Capture the currently focused card before leaving catalog
+    function captureLastCard() {
+        const focused = document.querySelector('.card.tv-focus') || document.querySelector('.card.focusable:focus');
+        if (focused) {
+            lastFocusedCardData = {
+                id:        focused.getAttribute('data-id'),
+                type:      focused.getAttribute('data-type'),
+                backdrop:  focused.getAttribute('data-backdrop'),
+                carouselId: focused.closest('[id]')?.id || null
+            };
+        }
+    }
+
+    // Restore focus to the card that opened details
+    function restoreCatalogFocus() {
+        setTimeout(() => {
+            document.getElementById('view-catalog').scrollTop = catalogScrollPos;
+            let targetCard = null;
+            if (lastFocusedCardData) {
+                targetCard = document.querySelector(
+                    `.card[data-id="${lastFocusedCardData.id}"][data-type="${lastFocusedCardData.type}"]`
+                );
             }
+            if (!targetCard) {
+                targetCard = document.querySelector('#carousel-movies .card.focusable');
+            }
+            if (targetCard) {
+                setTvFocus(targetCard);
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                updateCatalogBg(targetCard.getAttribute('data-backdrop'));
+            }
+        }, 100);
+    }
+
+    function switchView(viewName) {
+        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${viewName}`).classList.add('active');
+
+        if (viewName === 'catalog') {
+            restoreCatalogFocus();
+        } else if (viewName === 'details') {
+            document.getElementById('view-details').scrollTop = 0;
+            setTimeout(() => {
+                const playBtn   = document.querySelector('.btn-play');
+                const seasonSel = document.getElementById('season-selector');
+                const target    = playBtn
+                    || (seasonSel && seasonSel.style.display !== 'none' ? seasonSel : null)
+                    || document.getElementById('btn-back-details');
+                if (target) setTvFocus(target);
+            }, 100);
+        }
+    }
+
+    function navigateTo(viewName) {
+        if (viewStack[viewStack.length - 1] === 'catalog') {
+            catalogScrollPos = document.getElementById('view-catalog').scrollTop;
+        }
+        if (viewStack[viewStack.length - 1] !== viewName) viewStack.push(viewName);
+        switchView(viewName);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       BACK NAVIGATION
+    ════════════════════════════════════════════════════════════════════════ */
+    let backCooldown = false;
+
+    function safeGoBack() {
+        if (activeDialog) {
+            closeDialog();
+            setTimeout(() => {
+                const firstEp = document.querySelector('.ep-card.focusable');
+                if (firstEp) setTvFocus(firstEp);
+            }, 100);
+            return;
         }
 
-        function goBack() { safeGoBack(); }
+        if (backCooldown) return;
+        backCooldown = true;
+        setTimeout(() => { backCooldown = false; }, 800);
 
-        // ─── Keyboard ────────────────────────────────────────────────────────────────
-        window.addEventListener('keydown', (e) => {
-            const key = e.keyCode;
+        const activeView = document.querySelector('.view.active');
+        const activeId   = activeView ? activeView.id : '';
 
-            if ([37, 38, 39, 40, 19, 20, 21, 22].includes(key)) {
-                if (!activeDialog && document.activeElement.tagName === 'INPUT' && [37, 39, 21, 22].includes(key)) return;
-                e.preventDefault();
-                if (key === 37 || key === 21) moveFocus('LEFT');
-                if (key === 38 || key === 19) moveFocus('UP');
-                if (key === 39 || key === 22) moveFocus('RIGHT');
-                if (key === 40 || key === 20) moveFocus('DOWN');
-                return;
+        if (activeId === 'view-details') {
+            viewStack.pop();
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-catalog').classList.add('active');
+            restoreCatalogFocus();
+        }
+    }
+
+    function goBack() { safeGoBack(); }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       KEYBOARD / REMOTE EVENTS
+    ════════════════════════════════════════════════════════════════════════ */
+    window.addEventListener('keydown', (e) => {
+        const key = e.keyCode;
+
+        // Arrow keys & DPAD
+        if ([37, 38, 39, 40, 19, 20, 21, 22].includes(key)) {
+            // Allow LEFT/RIGHT inside text input
+            if (!activeDialog && document.activeElement.tagName === 'INPUT' && [37, 39, 21, 22].includes(key)) return;
+            e.preventDefault();
+            if (key === 37 || key === 21) moveFocus('LEFT');
+            if (key === 38 || key === 19) moveFocus('UP');
+            if (key === 39 || key === 22) moveFocus('RIGHT');
+            if (key === 40 || key === 20) moveFocus('DOWN');
+            return;
+        }
+
+        // Back / Escape
+        const isBackKey = [27, 461, 10009, 4, 8].includes(key)
+            || e.key === 'Escape' || e.key === 'Backspace'
+            || e.key === 'GoBack' || e.key === 'BrowserBack';
+
+        if (isBackKey) {
+            if (!activeDialog && document.activeElement.tagName === 'INPUT' && (key === 8 || e.key === 'Backspace')) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            safeGoBack();
+            return;
+        }
+
+        // Enter / OK button
+        if ([13, 23, 66].includes(key) || e.key === 'Enter') {
+            if (activeDialog) {
+                const focusedEl = activeDialog.querySelector('.tv-focus') || document.activeElement;
+                if (focusedEl && activeDialog.contains(focusedEl)) { e.preventDefault(); focusedEl.click(); return; }
             }
+            const focusedEl = document.querySelector('.tv-focus') || document.activeElement;
+            if (focusedEl?.classList.contains('focusable')) { e.preventDefault(); focusedEl.click(); }
+        }
+    }, true);
 
-            const isBackKey = [27, 461, 10009, 4, 8].includes(key) ||
-                e.key === 'Escape' || e.key === 'Backspace' ||
-                e.key === 'GoBack' || e.key === 'BrowserBack';
+    /* ════════════════════════════════════════════════════════════════════════
+       CATALOG
+    ════════════════════════════════════════════════════════════════════════ */
+    async function initCatalog() {
+        try {
+            showSkeletons('carousel-movies', 10);
+            showSkeletons('carousel-series', 10);
 
-            if (isBackKey) {
-                if (!activeDialog && document.activeElement.tagName === 'INPUT' && (key === 8 || e.key === 'Backspace')) return;
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                safeGoBack();
-                return;
-            }
+            const [moviesRes, seriesRes] = await Promise.all([
+                fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=it-IT`),
+                fetch(`https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&language=it-IT`),
+                fetchVixAvailability()
+            ]);
 
-            if ([13, 23, 66].includes(key) || e.key === 'Enter') {
-                if (activeDialog) {
-                    const focusedEl = activeDialog.querySelector('.tv-focus') || document.activeElement;
-                    if (focusedEl && activeDialog.contains(focusedEl)) {
-                        e.preventDefault();
-                        focusedEl.click();
-                        return;
-                    }
+            const movies = await moviesRes.json();
+            const series = await seriesRes.json();
+
+            renderCarousel('carousel-movies', movies.results, 'movie');
+            renderCarousel('carousel-series', series.results, 'tv');
+            renderRecentCarousel();
+
+            setTimeout(() => {
+                const firstCard = document.querySelector('#carousel-movies .card.focusable');
+                if (firstCard) {
+                    setTvFocus(firstCard);
+                    updateCatalogBg(firstCard.getAttribute('data-backdrop'));
                 }
-                const focusedEl = document.querySelector('.tv-focus') || document.activeElement;
-                if (focusedEl && focusedEl.classList.contains('focusable')) {
-                    e.preventDefault();
-                    focusedEl.click();
-                }
-            }
-        }, true);
+            }, 500);
+        } catch (e) { console.error('[CrW-Zone] API Error', e); }
+    }
 
-        // ─── Catalog ─────────────────────────────────────────────────────────────────
-        async function initCatalog() {
+    function showSkeletons(containerId, count) {
+        document.getElementById(containerId).innerHTML =
+            Array(count).fill('<div class="card-skeleton"></div>').join('');
+    }
+
+    function renderCarousel(containerId, items, defaultType) {
+        const container = document.getElementById(containerId);
+        const html = items
+            .filter(item => item.poster_path)
+            .map(item => {
+                const type = item.media_type || defaultType;
+                if (!isAvailableOnVix(item.id, type)) return null;
+                return `
+                <div class="card focusable" tabindex="0"
+                     data-id="${item.id}" data-type="${type}"
+                     data-backdrop="${item.backdrop_path || ''}"
+                     onclick="openDetails('${item.id}','${type}')">
+                    <div class="badge"><i class="fas fa-star"></i> ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}</div>
+                    <img src="${IMG_BASE}w342${item.poster_path}" loading="lazy" alt="${item.title || item.name}">
+                    <div class="title">${item.title || item.name}</div>
+                </div>`;
+            })
+            .filter(Boolean)
+            .join('');
+        container.innerHTML = html || '<p style="color:#666;padding:0 4%;">Nessun contenuto disponibile.</p>';
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SEARCH
+    ════════════════════════════════════════════════════════════════════════ */
+    let debounceTimer;
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        const query        = e.target.value.trim();
+        const catalogContent = document.getElementById('catalog-content');
+        const searchResults  = document.getElementById('search-results');
+
+        if (!query) {
+            catalogContent.style.display = 'block';
+            searchResults.style.display  = 'none';
+            return;
+        }
+
+        debounceTimer = setTimeout(async () => {
             try {
-                showSkeletons('carousel-movies', 10);
-                showSkeletons('carousel-series', 10);
-
-                const [moviesRes, seriesRes] = await Promise.all([
-                    fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=it-IT`),
-                    fetch(`https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&language=it-IT`),
-                    fetchVixAvailability()
-                ]);
-
-                const movies = await moviesRes.json();
-                const series = await seriesRes.json();
-
-                renderCarousel('carousel-movies', movies.results, 'movie');
-                renderCarousel('carousel-series', series.results, 'tv');
-                renderRecentCarousel();
-
-                setTimeout(() => {
-                    const firstCard = document.querySelector('#carousel-movies .card.focusable');
-                    if (firstCard) {
-                        setTvFocus(firstCard);
-                        // Inizializza subito lo sfondo alla prima card
-                        updateCatalogBg(firstCard.getAttribute('data-backdrop'));
-                    }
-                }, 500);
-            } catch (e) { console.error("API Error", e); }
-        }
-
-        function showSkeletons(containerId, count) {
-            document.getElementById(containerId).innerHTML = Array(count).fill('<div class="card-skeleton"></div>').join('');
-        }
-
-        const cardBackdrops = {};
-
-        function renderCarousel(containerId, items, defaultType) {
-            const container = document.getElementById(containerId);
-            const html = items
-                .filter(item => item.poster_path)
-                .map(item => {
-                    const type = item.media_type || defaultType;
-                    if (!isAvailableOnVix(item.id, type)) return null;
-                    if (item.backdrop_path) cardBackdrops[item.id] = item.backdrop_path;
-                    return `
-                    <div class="card focusable" tabindex="0"
-                         data-id="${item.id}"
-                         data-type="${type}"
-                         data-backdrop="${item.backdrop_path || ''}"
-                         onclick="openDetails('${item.id}', '${type}')">
-                        <div class="badge"><i class="fas fa-star"></i> ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}</div>
-                        <img src="${IMG_BASE}w342${item.poster_path}" loading="lazy">
-                        <div class="title">${item.title || item.name}</div>
-                    </div>`;
-                })
-                .filter(Boolean)
-                .join('');
-            container.innerHTML = html || '<p style="color:#666; padding: 0 4%;">Nessun contenuto disponibile.</p>';
-        }
-
-        // ─── Search ──────────────────────────────────────────────────────────────────
-        let debounceTimer;
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            clearTimeout(debounceTimer);
-            const query = e.target.value.trim();
-            const catalogContent = document.getElementById('catalog-content');
-            const searchResults = document.getElementById('search-results');
-
-            if (query.length === 0) {
-                catalogContent.style.display = 'block';
-                searchResults.style.display = 'none';
-                return;
-            }
-
-            debounceTimer = setTimeout(async () => {
-                const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&language=it-IT&query=${encodeURIComponent(query)}`);
+                const res  = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&language=it-IT&query=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 catalogContent.style.display = 'none';
-                searchResults.style.display = 'grid';
+                searchResults.style.display  = 'grid';
 
                 const validItems = data.results.filter(i =>
                     i.poster_path &&
@@ -1284,44 +1339,104 @@
 
                 if (validItems.length > 0) {
                     renderCarousel('search-results', validItems, 'movie');
+                    // Auto-focus first result for remote navigation
+                    setTimeout(() => {
+                        const firstResult = document.querySelector('#search-results .card.focusable');
+                        if (document.activeElement === document.getElementById('search-input') && firstResult) {
+                            // Don't steal focus from input automatically – user can press DOWN
+                        }
+                    }, 100);
                 } else {
-                    searchResults.innerHTML = '<h2 style="grid-column:1/-1; text-align:center; color:#888;">Nessun risultato disponibile su VixSrc.</h2>';
+                    searchResults.innerHTML = '<h2 style="grid-column:1/-1;text-align:center;color:#888;padding:40px 0;">Nessun risultato disponibile su VixSrc.</h2>';
                 }
-            }, 500);
-        });
+            } catch (err) {
+                console.error('[CrW-Zone] Search error', err);
+            }
+        }, 500);
+    });
 
-        // ─── Details ─────────────────────────────────────────────────────────────────
-        function renderExtraInfo(data, type) {
-            const container = document.getElementById('dt-extra-info');
-            container.innerHTML = '';
-            let duration = null;
-            if (type === 'movie' && data.runtime && data.runtime > 0) {
-                const h = Math.floor(data.runtime / 60);
-                const m = data.runtime % 60;
-                duration = h > 0 ? `${h}h ${m}m` : `${m}m`;
-            } else if (type === 'tv' && data.episode_run_time && data.episode_run_time.length > 0) {
-                duration = `~${data.episode_run_time[0]}m / episodio`;
+    /* ════════════════════════════════════════════════════════════════════════
+       DETAILS
+    ════════════════════════════════════════════════════════════════════════ */
+    async function openDetails(id, type) {
+        captureLastCard(); // Save current card before navigating away
+        navigateTo('details');
+
+        document.getElementById('episodes-wrapper').style.display = 'none';
+        document.getElementById('action-container').innerHTML = '';
+
+        try {
+            const res  = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=it-IT`);
+            const data = await res.json();
+            activeItemData = { ...data, media_type: type };
+
+            if (type === 'movie' && data.poster_path) {
+                saveRecent({ id: data.id, type: 'movie', name: data.title || data.name, poster: data.poster_path, backdrop: data.backdrop_path || '' });
+                renderRecentCarousel();
             }
-            if (duration) container.innerHTML += `<span class="info-chip"><i class="fas fa-clock"></i> ${duration}</span>`;
-            if (type === 'tv' && data.number_of_seasons) container.innerHTML += `<span class="info-chip"><i class="fas fa-layer-group"></i> ${data.number_of_seasons} stagion${data.number_of_seasons === 1 ? 'e' : 'i'}</span>`;
-            if (type === 'tv' && data.number_of_episodes) container.innerHTML += `<span class="info-chip"><i class="fas fa-list"></i> ${data.number_of_episodes} episodi</span>`;
-            if (data.genres && data.genres.length > 0) {
-                data.genres.forEach(g => {
-                    container.innerHTML += `<span class="info-chip genre"><i class="fas fa-tag"></i> ${g.name}</span>`;
-                });
+
+            document.getElementById('dt-backdrop').src  = data.backdrop_path ? `${IMG_BASE}original${data.backdrop_path}` : '';
+            document.getElementById('dt-poster').src     = data.poster_path ? `${IMG_BASE}w500${data.poster_path}` : '';
+            document.getElementById('dt-poster').alt     = data.title || data.name || '';
+            document.getElementById('dt-title').innerText  = data.title || data.name || '';
+            document.getElementById('dt-rating').innerText = data.vote_average ? data.vote_average.toFixed(1) : 'N/A';
+            document.getElementById('dt-year').innerText   = (data.release_date || data.first_air_date || 'N/A').split('-')[0];
+            document.getElementById('dt-type').innerText   = type === 'movie' ? 'Film' : 'Serie TV';
+            document.getElementById('dt-overview').innerText = data.overview || 'Trama non disponibile.';
+
+            renderExtraInfo(data, type);
+
+            if (type === 'movie') {
+                _refreshButtons(activeItemData);
+            } else {
+                document.getElementById('episodes-wrapper').style.display = 'block';
+                currentSeasons     = (data.seasons || []).filter(s => s.season_number > 0);
+                currentTvId        = id;
+                currentSeasonIndex = 0;
+                if (currentSeasons.length > 0) {
+                    updateSeasonDisplay();
+                    loadEpisodes(id, currentSeasons[0].season_number);
+                    setTimeout(() => setTvFocus(document.getElementById('season-selector')), 300);
+                } else {
+                    document.getElementById('episodes-grid').innerHTML = '<p>Nessun episodio disponibile.</p>';
+                    document.getElementById('season-selector').style.display = 'none';
+                }
             }
+        } catch (e) { console.error('[CrW-Zone] Details Error', e); }
+    }
+
+    function renderExtraInfo(data, type) {
+        const container = document.getElementById('dt-extra-info');
+        container.innerHTML = '';
+        let duration = null;
+        if (type === 'movie' && data.runtime > 0) {
+            const h = Math.floor(data.runtime / 60);
+            const m = data.runtime % 60;
+            duration = h > 0 ? `${h}h ${m}m` : `${m}m`;
+        } else if (type === 'tv' && data.episode_run_time?.length > 0) {
+            duration = `~${data.episode_run_time[0]}m / episodio`;
         }
+        if (duration)
+            container.innerHTML += `<span class="info-chip"><i class="fas fa-clock"></i> ${duration}</span>`;
+        if (type === 'tv' && data.number_of_seasons)
+            container.innerHTML += `<span class="info-chip"><i class="fas fa-layer-group"></i> ${data.number_of_seasons} stagion${data.number_of_seasons === 1 ? 'e' : 'i'}</span>`;
+        if (type === 'tv' && data.number_of_episodes)
+            container.innerHTML += `<span class="info-chip"><i class="fas fa-list"></i> ${data.number_of_episodes} episodi</span>`;
+        data.genres?.forEach(g => {
+            container.innerHTML += `<span class="info-chip genre"><i class="fas fa-tag"></i> ${g.name}</span>`;
+        });
+    }
 
-        function _refreshButtons(data) {
-            if (!data || data.media_type !== 'movie') return;
-            const id = data.id;
-            const key = _resumeKey('movie', id, 1, 1);
-            const t = _getResume(key);
-            const container = document.getElementById('action-container');
-            if (!container) return;
+    function _refreshButtons(data) {
+        if (!data || data.media_type !== 'movie') return;
+        const id  = data.id;
+        const key = _resumeKey('movie', id, 1, 1);
+        const t   = _getResume(key);
+        const container = document.getElementById('action-container');
+        if (!container) return;
 
-            if (t > 10) {
-                container.innerHTML = `
+        if (t > 10) {
+            container.innerHTML = `
             <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
                 <button class="btn-play focusable" tabindex="0" onclick="startPlayer('movie','${id}')">
                     <i class="fas fa-play"></i> DALL'INIZIO
@@ -1337,252 +1452,221 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>`;
-            } else {
-                container.innerHTML = `
+        } else {
+            container.innerHTML = `
             <button class="btn-play focusable" tabindex="0" onclick="startPlayer('movie','${id}')">
                 <i class="fas fa-play"></i> GUARDA
             </button>`;
-            }
-            setTimeout(() => {
-                const btn = container.querySelector('.btn-play');
-                if (btn) setTvFocus(btn);
-            }, 80);
         }
+        setTimeout(() => {
+            const btn = container.querySelector('.btn-play');
+            if (btn) setTvFocus(btn);
+        }, 80);
+    }
 
-        function askResumeEpisode(type, id, season, episode) {
-            const key = _resumeKey(type, id, season, episode);
-            const saved = _getResume(key);
+    /* ════════════════════════════════════════════════════════════════════════
+       SEASONS
+    ════════════════════════════════════════════════════════════════════════ */
+    function changeSeason(offset) {
+        const newIndex = currentSeasonIndex + offset;
+        if (newIndex >= 0 && newIndex < currentSeasons.length) {
+            currentSeasonIndex = newIndex;
+            updateSeasonDisplay();
+            loadEpisodes(currentTvId, currentSeasons[currentSeasonIndex].season_number);
+        }
+    }
 
-            if (saved > 10) {
-                const overlay = document.createElement('div');
-                overlay.id = 'resume-dialog-overlay';
+    function updateSeasonDisplay() {
+        const selector = document.getElementById('season-selector');
+        selector.style.display = 'flex';
+        const sName  = currentSeasons[currentSeasonIndex].name || `Stagione ${currentSeasons[currentSeasonIndex].season_number}`;
+        const leftOp = currentSeasonIndex > 0 ? '1' : '0.2';
+        const rightOp = currentSeasonIndex < currentSeasons.length - 1 ? '1' : '0.2';
+        selector.innerHTML = `
+            <i class="fas fa-chevron-left"  style="opacity:${leftOp};padding:10px;" onclick="event.stopPropagation();changeSeason(-1)"></i>
+            <span style="min-width:130px;text-align:center;">${sName}</span>
+            <i class="fas fa-chevron-right" style="opacity:${rightOp};padding:10px;" onclick="event.stopPropagation();changeSeason(1)"></i>`;
+    }
 
-                overlay.innerHTML = `
-                    <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:16px;
-                                padding:30px 35px;max-width:380px;width:90%;text-align:center;
-                                box-shadow:0 20px 60px rgba(0,0,0,0.8);">
-                        <div style="font-size:2rem;margin-bottom:12px;">▶</div>
-                        <h3 style="font-size:1.2rem;font-weight:800;margin-bottom:8px;">Continua a guardare?</h3>
-                        <p style="color:#888;font-size:0.9rem;margin-bottom:25px;">
-                            Hai guardato fino a <strong style="color:#4dc4ff;">${_fmtTime(saved)}</strong>
-                        </p>
-                        <div style="display:flex;flex-direction:column;gap:12px;">
-                            <button class="focusable" id="btn-resume-ep"
-                                style="background:var(--primary);color:white;border:none;padding:13px 20px;
-                                       border-radius:30px;font-size:1rem;font-weight:800;cursor:pointer;
-                                       display:flex;align-items:center;justify-content:center;gap:8px;">
-                                <i class="fas fa-history"></i> RIPRENDI · ${_fmtTime(saved)}
-                            </button>
-                            <button class="focusable" id="btn-restart-ep"
-                                style="background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.2);
-                                       padding:13px 20px;border-radius:30px;font-size:1rem;font-weight:700;
-                                       cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-                                <i class="fas fa-redo"></i> DALL'INIZIO
-                            </button>
-                            <button class="focusable" id="btn-cancel-ep"
-                                style="background:transparent;color:#555;border:none;padding:8px;
-                                       font-size:0.85rem;cursor:pointer;">
-                                Annulla
-                            </button>
+    /* ════════════════════════════════════════════════════════════════════════
+       EPISODES
+    ════════════════════════════════════════════════════════════════════════ */
+    async function loadEpisodes(tvId, seasonNum) {
+        const grid = document.getElementById('episodes-grid');
+        grid.innerHTML = '<p style="color:#aaa;padding:20px 0;">Caricamento episodi...</p>';
+        try {
+            const res  = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNum}?api_key=${API_KEY}&language=it-IT`);
+            const data = await res.json();
+            const backdropPath = activeItemData?.backdrop_path || '';
+
+            grid.innerHTML = (data.episodes || []).map(ep => {
+                const img    = ep.still_path
+                    ? `${IMG_BASE}w400${ep.still_path}`
+                    : 'https://via.placeholder.com/400x225/222/fff?text=Nessuna+Immagine';
+                const epKey  = _resumeKey('tv', tvId, seasonNum, ep.episode_number);
+                const epTime = _getResume(epKey);
+                const badge  = epTime > 10
+                    ? `<div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.85);
+                           color:#4dc4ff;font-size:0.72rem;font-weight:800;padding:3px 8px;
+                           border-radius:6px;backdrop-filter:blur(4px);">
+                           ▶ ${_fmtTime(epTime)}</div>`
+                    : '';
+                const showName   = (activeItemData?.name || activeItemData?.title || '').replace(/'/g, "\\'");
+                const posterPath = activeItemData?.poster_path || '';
+
+                return `
+                <div class="ep-card focusable" tabindex="0"
+                     onclick="saveRecent({id:'${tvId}',type:'tv',name:'${showName}',poster:'${posterPath}',backdrop:'${backdropPath}',season:${seasonNum},episode:${ep.episode_number}});
+                              renderRecentCarousel();
+                              askResumeEpisode('tv','${tvId}','${seasonNum}','${ep.episode_number}')">
+                    <div class="ep-thumb">
+                        <img src="${img}" loading="lazy" alt="Episodio ${ep.episode_number}">
+                        ${badge}
+                    </div>
+                    <div class="ep-info">
+                        <div style="color:var(--primary);font-size:0.8rem;font-weight:800;margin-bottom:5px;">
+                            Episodio ${ep.episode_number}
                         </div>
-                    </div>`;
+                        <div class="ep-title">${ep.name || ''}</div>
+                        <div class="ep-desc">${ep.overview || '...'}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch (e) { grid.innerHTML = '<p style="color:#e55;">Errore nel caricamento episodi.</p>'; }
+    }
 
-                overlay.querySelector('#btn-resume-ep').onclick = () => {
-                    closeDialog();
-                    startPlayer(type, id, season, episode);
-                };
+    /* ════════════════════════════════════════════════════════════════════════
+       PLAYER – navigate to player.html
+    ════════════════════════════════════════════════════════════════════════ */
+    function startPlayer(type, id, season = 1, episode = 1) {
+        const key      = _resumeKey(type, id, season, episode);
+        const resumeAt = _getResume(key);
 
-                overlay.querySelector('#btn-restart-ep').onclick = () => {
-                    _clearResume(key);
-                    closeDialog();
-                    startPlayer(type, id, season, episode);
-                };
-
-                overlay.querySelector('#btn-cancel-ep').onclick = () => {
-                    closeDialog();
-                    setTimeout(() => {
-                        const firstEp = document.querySelector('.ep-card.focusable');
-                        if (firstEp) setTvFocus(firstEp);
-                    }, 100);
-                };
-
-                openDialog(overlay, 'btn-resume-ep');
-
-            } else {
-                startPlayer(type, id, season, episode);
-            }
+        // Save return state so we can restore details page on back
+        if (activeItemData) {
+            sessionStorage.setItem('returnState', JSON.stringify({
+                view:              'details',
+                id:                activeItemData.id,
+                type:              activeItemData.media_type,
+                detailsScrollTop:  document.getElementById('view-details').scrollTop
+            }));
         }
 
-        async function openDetails(id, type) {
-            navigateTo('details');
-            document.getElementById('episodes-wrapper').style.display = 'none';
-            document.getElementById('action-container').innerHTML = '';
+        // Save resume session
+        sessionStorage.setItem('resumeSession', JSON.stringify({ key, startedAt: Date.now() }));
 
-            try {
-                const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=it-IT`);
-                const data = await res.json();
-                activeItemData = { ...data, media_type: type };
+        let url = `player.html?type=${type}&id=${id}`;
+        if (type === 'tv')  url += `&season=${season}&episode=${episode}`;
+        if (resumeAt > 10)  url += `&startAt=${resumeAt}`;
+        window.location.href = url;
+    }
 
-                // FIX 2a: salva anche backdrop_path nei recenti (film)
-                if (type === 'movie' && data.poster_path) {
-                    saveRecent({
-                        id: data.id, type: 'movie',
-                        name: data.title || data.name,
-                        poster: data.poster_path,
-                        backdrop: data.backdrop_path || ''   // ← aggiunto
-                    });
-                    renderRecentCarousel();
-                }
+    /* ════════════════════════════════════════════════════════════════════════
+       RESUME EPISODE DIALOG
+    ════════════════════════════════════════════════════════════════════════ */
+    function askResumeEpisode(type, id, season, episode) {
+        const key   = _resumeKey(type, id, season, episode);
+        const saved = _getResume(key);
+        if (saved <= 10) { startPlayer(type, id, season, episode); return; }
 
-                document.getElementById('dt-backdrop').src = data.backdrop_path ? `${IMG_BASE}original${data.backdrop_path}` : '';
-                document.getElementById('dt-poster').src = `${IMG_BASE}w500${data.poster_path}`;
-                document.getElementById('dt-title').innerText = data.title || data.name;
-                document.getElementById('dt-rating').innerText = data.vote_average ? data.vote_average.toFixed(1) : 'N/A';
-                document.getElementById('dt-year').innerText = (data.release_date || data.first_air_date || 'N/A').split('-')[0];
-                document.getElementById('dt-type').innerText = type === 'movie' ? 'Film' : 'Serie TV';
-                document.getElementById('dt-overview').innerText = data.overview || 'Trama non disponibile.';
-                renderExtraInfo(data, type);
-
-                if (type === 'movie') {
-                    _refreshButtons(activeItemData);
-                } else {
-                    document.getElementById('episodes-wrapper').style.display = 'block';
-                    currentSeasons = data.seasons.filter(s => s.season_number > 0);
-                    currentTvId = id;
-                    currentSeasonIndex = 0;
-                    if (currentSeasons.length > 0) {
-                        updateSeasonDisplay();
-                        loadEpisodes(id, currentSeasons[0].season_number);
-                        setTimeout(() => setTvFocus(document.getElementById('season-selector')), 300);
-                    } else {
-                        document.getElementById('episodes-grid').innerHTML = '<p>Nessun episodio disponibile.</p>';
-                        document.getElementById('season-selector').style.display = 'none';
-                    }
-                }
-            } catch (e) { console.error("Details Error", e); }
-        }
-
-        async function loadEpisodes(tvId, seasonNum) {
-            const grid = document.getElementById('episodes-grid');
-            grid.innerHTML = '<p style="color:#aaa;">Caricamento episodi...</p>';
-            try {
-                const res = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNum}?api_key=${API_KEY}&language=it-IT`);
-                const data = await res.json();
-
-                // FIX 2b: salva backdrop_path della serie per i recenti TV
-                const backdropPath = (activeItemData?.backdrop_path || '');
-
-                grid.innerHTML = data.episodes.map(ep => {
-                    const img = ep.still_path ? `${IMG_BASE}w400${ep.still_path}` : 'https://via.placeholder.com/400x225/222/fff?text=Nessuna+Immagine';
-                    const epKey = _resumeKey('tv', tvId, seasonNum, ep.episode_number);
-                    const epTime = _getResume(epKey);
-                    const badge = epTime > 10
-                        ? `<div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.85);
-                       color:#4dc4ff;font-size:0.72rem;font-weight:800;padding:3px 8px;
-                       border-radius:6px;backdrop-filter:blur(4px);">
-                       ▶ ${_fmtTime(epTime)}</div>`
-                        : '';
-                    const showName = (activeItemData?.name || activeItemData?.title || '').replace(/'/g, "\\'");
-                    const posterPath = (activeItemData?.poster_path || '');
-                    // FIX 2b: aggiunto backdrop nella chiamata saveRecent TV
-                    return `
-            <div class="ep-card focusable" tabindex="0"
-                 onclick="saveRecent({id:'${tvId}',type:'tv',name:'${showName}',poster:'${posterPath}',backdrop:'${backdropPath}',season:${seasonNum},episode:${ep.episode_number}}); renderRecentCarousel(); askResumeEpisode('tv','${tvId}','${seasonNum}','${ep.episode_number}')">
-                <div class="ep-thumb" style="position:relative;">
-                    <img src="${img}" loading="lazy">
-                    ${badge}
-                </div>
-                <div class="ep-info">
-                    <div style="color:var(--primary); font-size:0.8rem; font-weight:800; margin-bottom:5px;">Episodio ${ep.episode_number}</div>
-                    <div class="ep-title">${ep.name}</div>
-                    <div class="ep-desc">${ep.overview || '...'}</div>
+        const overlay = document.createElement('div');
+        overlay.id    = 'resume-dialog-overlay';
+        overlay.innerHTML = `
+            <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:16px;
+                        padding:30px 35px;max-width:380px;width:90%;text-align:center;
+                        box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+                <div style="font-size:2rem;margin-bottom:12px;">▶</div>
+                <h3 style="font-size:1.2rem;font-weight:800;margin-bottom:8px;">Continua a guardare?</h3>
+                <p style="color:#888;font-size:0.9rem;margin-bottom:25px;">
+                    Hai guardato fino a <strong style="color:#4dc4ff;">${_fmtTime(saved)}</strong>
+                </p>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <button class="focusable" id="btn-resume-ep"
+                        style="background:var(--primary);color:white;border:none;padding:13px 20px;
+                               border-radius:30px;font-size:1rem;font-weight:800;cursor:pointer;
+                               display:flex;align-items:center;justify-content:center;gap:8px;">
+                        <i class="fas fa-history"></i> RIPRENDI · ${_fmtTime(saved)}
+                    </button>
+                    <button class="focusable" id="btn-restart-ep"
+                        style="background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.2);
+                               padding:13px 20px;border-radius:30px;font-size:1rem;font-weight:700;
+                               cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                        <i class="fas fa-redo"></i> DALL'INIZIO
+                    </button>
+                    <button class="focusable" id="btn-cancel-ep"
+                        style="background:transparent;color:#555;border:none;padding:8px;
+                               font-size:0.85rem;cursor:pointer;">
+                        Annulla
+                    </button>
                 </div>
             </div>`;
-                }).join('');
-            } catch (e) { grid.innerHTML = '<p>Errore.</p>'; }
-        }
 
-        // ─── Catalog background ──────────────────────────────────────────────────────
-        function updateCatalogBg(backdropPath) {
-            const bg = document.getElementById('catalog-bg');
-            if (!bg) return;
-            if (!backdropPath) { bg.style.opacity = '0'; return; }
-            const url = `${IMG_BASE}original${backdropPath}`;
-            const img = new Image();
-            img.onload = () => { bg.style.backgroundImage = `url('${url}')`; bg.style.opacity = '1'; };
-            img.src = url;
-        }
+        overlay.querySelector('#btn-resume-ep').onclick = () => {
+            closeDialog();
+            startPlayer(type, id, season, episode);
+        };
+        overlay.querySelector('#btn-restart-ep').onclick = () => {
+            _clearResume(key);
+            closeDialog();
+            startPlayer(type, id, season, episode);
+        };
+        overlay.querySelector('#btn-cancel-ep').onclick = () => {
+            closeDialog();
+            setTimeout(() => {
+                const firstEp = document.querySelector('.ep-card.focusable');
+                if (firstEp) setTvFocus(firstEp);
+            }, 100);
+        };
 
-        // ─── Logo ────────────────────────────────────────────────────────────────────
-        function createLogo() {
-            const header = document.querySelector('header');
-            if (!header) return;
-            const logoContainer = document.createElement('div');
-            //logoContainer.id = 'nerozone-logo';
-            Object.assign(logoContainer.style, {
-                display: 'flex', alignItems: 'center', gap: '6px',
-                fontSize: '2rem', fontWeight: '900', cursor: 'pointer', padding: '10px'
-            });
-            const gradient = 'linear-gradient(45deg, #00aaff, #4dc4ff, #80e0ff)';
-            const nero = document.createElement('span');
-            nero.textContent = 'CrW-ZoneVod';
-            Object.assign(nero.style, {
-                background: gradient,
-                webkitBackgroundClip: 'text',
-                webkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                filter: 'drop-shadow(0 0 10px rgba(0,170,255,0.5))'
-            });
-            const vod = document.createElement('img');
-            // vod.src = "https://github.com/alemagno1994alex-glitch/autoupdate/blob/main/images/logo.png?raw=true";
-            vod.alt = '';
-            Object.assign(vod.style, { height: '45px', marginLeft: '4px', transform: 'translateY(3px)', filter: 'drop-shadow(0 0 10px rgba(0,170,255,0.6))' });
-            logoContainer.appendChild(nero);
-            logoContainer.appendChild(vod);
-            header.insertBefore(logoContainer, header.firstChild);
-        }
+        openDialog(overlay, 'btn-resume-ep');
+    }
 
-        // ─── Ripristina la schermata al ritorno dal player ───────────────────────────
-        async function restoreStateIfNeeded() {
-            const raw = sessionStorage.getItem('returnState');
-            const rawResume = sessionStorage.getItem('resumeSession');
-            if (rawResume) {
-                sessionStorage.removeItem('resumeSession');
-                try {
-                    const rs = JSON.parse(rawResume);
-                    if (rs.key && rs.startedAt) _saveResume(rs.key, rs.startedAt);
-                } catch (e) { }
-            }
-            if (!raw) return false;
-            sessionStorage.removeItem('returnState');
+    /* ════════════════════════════════════════════════════════════════════════
+       RESTORE STATE AFTER PLAYER
+       Called on page load – restores details view when returning from player
+    ════════════════════════════════════════════════════════════════════════ */
+    async function restoreStateIfNeeded() {
+        // Restore resume time from session
+        const rawResume = sessionStorage.getItem('resumeSession');
+        if (rawResume) {
+            sessionStorage.removeItem('resumeSession');
             try {
-                const state = JSON.parse(raw);
-                if (state.view === 'details' && state.id && state.type) {
-                    await openDetails(state.id, state.type);
-                    setTimeout(() => {
-                        document.getElementById('view-details').scrollTop = state.detailsScrollTop || 0;
-                    }, 150);
-                    return true;
-                }
-            } catch (e) { }
-            return false;
+                const rs = JSON.parse(rawResume);
+                if (rs.key && rs.startedAt) _saveResume(rs.key, rs.startedAt);
+            } catch (e) { /* ignore */ }
         }
 
-        createLogo();
-        restoreStateIfNeeded().then(restored => {
-            if (!restored) initCatalog();
-            else initCatalog();
-        });
+        const raw = sessionStorage.getItem('returnState');
+        if (!raw) return false;
+        sessionStorage.removeItem('returnState');
+
+        try {
+            const state = JSON.parse(raw);
+            if (state.view === 'details' && state.id && state.type) {
+                await openDetails(state.id, state.type);
+                // Restore scroll position in detail view after render
+                setTimeout(() => {
+                    document.getElementById('view-details').scrollTop = state.detailsScrollTop || 0;
+                    // Re-focus play button
+                    const playBtn = document.querySelector('.btn-play.focusable');
+                    if (playBtn) setTvFocus(playBtn);
+                }, 200);
+                return true;
+            }
+        } catch (e) { /* ignore */ }
+        return false;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       INIT
+    ════════════════════════════════════════════════════════════════════════ */
+    migrateStorage();
+    createLogo();
+    restoreStateIfNeeded().then(restored => {
+        // Always init catalog in background (for recents, etc.)
+        initCatalog();
+    });
+
     </script>
-
-    <div id="resume-toast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
-    background:rgba(10,10,10,0.92);border:1px solid rgba(0,170,255,0.35);border-radius:10px;
-    padding:11px 22px;font-size:0.85rem;color:#4dc4ff;backdrop-filter:blur(12px);
-    opacity:0;pointer-events:none;transition:opacity 0.4s ease;white-space:nowrap;
-    z-index:99999;display:flex;align-items:center;gap:8px;">
-        <i class="fas fa-bookmark"></i><span id="resume-toast-text"></span>
-    </div>
-
 </body>
-
 </html>
