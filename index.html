@@ -1518,14 +1518,14 @@
             const header = document.querySelector('header');
             if (!header) return;
             const logoContainer = document.createElement('div');
-            logoContainer.id = 'nerozone-logo';
+            //logoContainer.id = 'nerozone-logo';
             Object.assign(logoContainer.style, {
                 display: 'flex', alignItems: 'center', gap: '6px',
                 fontSize: '2rem', fontWeight: '900', cursor: 'pointer', padding: '10px'
             });
             const gradient = 'linear-gradient(45deg, #00aaff, #4dc4ff, #80e0ff)';
             const nero = document.createElement('span');
-            nero.textContent = 'NeroZoneVod';
+            nero.textContent = 'CrW-ZoneVod';
             Object.assign(nero.style, {
                 background: gradient,
                 webkitBackgroundClip: 'text',
@@ -1534,7 +1534,7 @@
                 filter: 'drop-shadow(0 0 10px rgba(0,170,255,0.5))'
             });
             const vod = document.createElement('img');
-            vod.src = "https://github.com/alemagno1994alex-glitch/autoupdate/blob/main/images/logo.png?raw=true";
+            // vod.src = "https://github.com/alemagno1994alex-glitch/autoupdate/blob/main/images/logo.png?raw=true";
             vod.alt = '';
             Object.assign(vod.style, { height: '45px', marginLeft: '4px', transform: 'translateY(3px)', filter: 'drop-shadow(0 0 10px rgba(0,170,255,0.6))' });
             logoContainer.appendChild(nero);
