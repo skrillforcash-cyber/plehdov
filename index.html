@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VOD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --script: #ffffff;
+            --primary: hsl(194, 92%, 47%);
+            --bg-dark: #050505;
+            --text-main: #ffffff;
+            --glass-bg: rgba(20, 20, 20, 0.6);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        html {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .focusable {
+            outline: 3px solid transparent;
+            outline-offset: 2px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .focusable:focus,
+        .focusable.tv-focus {
+            outline: 5px solid var(--script) !important;
+            z-index: 50;
+        }
+
+        .view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .view.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #view-catalog {
+            background: var(--bg-dark);
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        header {
+            position: relative;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+            padding: 20px 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        #catalog-content,
+        #search-results {
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            width: 300px;
+            max-width: 100%;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            width: 100%;
+            margin-left: 10px;
+        }
+
+        #search-input.focusable:focus,
+        #search-input.tv-focus {
+            outline: none !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .search-box:focus-within,
+        .search-box.tv-focus-container {
+            outline: 5px solid var(--script) !important;
+            transform: scale(1.02);
+        }
+
+        .section-title {
+            margin: 30px 4% 15px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .carousel {
+            display: flex;
+            gap: 20px;
+            padding: 15px 4% 30px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+        }
+
+        .card-skeleton {
+            min-width: 160px;
+            height: 240px;
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .card {
+            min-width: 160px;
+            height: 240px;
+            background: #111;
+            position: relative;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card .badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #ffd700;
+            backdrop-filter: blur(4px);
+        }
+
+        .card .title {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            padding: 30px 10px 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #search-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 20px 4%;
+        }
+
+        #view-details {
+            background: var(--bg-dark);
+        }
+
+        .backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70vh;
+            object-fit: cover;
+            z-index: -1;
+            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+            opacity: 0.5;
+        }
+
+        .details-content {
+            padding: 80px 5% 50px;
+            display: flex;
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: flex-end;
+            min-height: 60vh;
+        }
+
+        .details-poster {
+            width: 300px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .details-info h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+            line-height: 1.1;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-size: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .overview {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #ccc;
+            max-width: 800px;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-play {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 20px rgba(229, 9, 20, 0.4);
+        }
+
+        .btn-play:focus,
+        .btn-play.tv-focus {
+            background: white;
+            color: var(--primary);
+            outline: none;
+        }
+
+        .episodes-section {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 5%;
+        }
+
+        .episodes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .season-select {
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            min-width: 240px;
+            font-weight: 800;
+        }
+
+        .season-select:focus,
+        .season-select.tv-focus {
+            border-color: var(--primary);
+            outline: none;
+            background: rgba(229, 9, 20, 0.15);
+        }
+
+        .season-select i {
+            font-size: 1.3rem;
+            color: var(--primary);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .episode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .ep-card {
+            background: rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            border: 1px solid transparent;
+        }
+
+        .ep-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #222;
+            position: relative;
+        }
+
+        .ep-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ep-info {
+            padding: 15px;
+        }
+
+        .ep-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .ep-desc {
+            font-size: 0.85rem;
+            color: #999;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .back-btn-float {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            z-index: 200;
+            font-size: 1.2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        #vix-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 0.8rem;
+            color: #aaa;
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        #vix-status.visible {
+            opacity: 1;
+        }
+
+        #vix-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #888;
+            flex-shrink: 0;
+        }
+
+        #vix-status .dot.loading {
+            background: #ffd700;
+            animation: pulse-dot 1s ease-in-out infinite;
+        }
+
+        #vix-status .dot.ok {
+            background: #46d369;
+        }
+
+        #vix-status .dot.error {
+            background: #e50914;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .info-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ddd;
+            backdrop-filter: blur(5px);
+        }
+
+        .info-chip i {
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+
+        .info-chip.genre {
+            border-color: rgba(0, 170, 255, 0.3);
+            background: rgba(0, 170, 255, 0.08);
+            color: #a0d8ef;
+        }
+
+        .info-chip.genre i {
+            color: #4dc4ff;
+        }
+
+        @media (max-width: 900px) {
+            .details-content {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding-top: 100px;
+                gap: 20px;
+            }
+
+            .details-poster {
+                width: 220px;
+            }
+
+            .meta {
+                justify-content: center;
+            }
+
+            .details-info h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                padding: 15px;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .logo {
+                font-size: 1.8rem;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+                margin: 20px 4% 10px;
+            }
+
+            .card {
+                min-width: 110px;
+                height: 165px;
+                border-radius: 8px;
+            }
+
+            .card-skeleton {
+                min-width: 110px;
+                height: 165px;
+            }
+
+            #search-results {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                gap: 15px;
+            }
+
+            .details-poster {
+                width: 160px;
+            }
+
+            .details-info h1 {
+                font-size: 2rem;
+            }
+
+            .overview {
+                font-size: 0.95rem;
+            }
+
+            .btn-play {
+                width: 100%;
+                justify-content: center;
+                padding: 15px 20px;
+                font-size: 1rem;
+            }
+
+            .episode-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            }
+
+            .back-btn-float {
+                top: 15px;
+                left: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* ── Resume dialog ── */
+        #resume-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="view-catalog" class="view active">
+        <div id="catalog-bg" style="
+            position: fixed; inset: 0; z-index: 0;
+            background-size: cover; background-position: center top;
+            transition: background-image 0.6s ease, opacity 0.6s ease;
+            opacity: 0; pointer-events: none;
+        "></div>
+        <div id="catalog-bg-overlay" style="
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            background: linear-gradient(to right, rgba(5,5,5,0.85) 30%, rgba(5,5,5,0.4) 100%),
+                        linear-gradient(to top, rgba(5,5,5,1) 0%, transparent 40%);
+        "></div>
+        <header>
+            <div class="search-box" id="search-box-container">
+                <i class="fas fa-search" style="color: #888;"></i>
+                <input type="text" id="search-input" class="focusable" placeholder="Cerca film o serie TV..."
+                    autocomplete="off">
+            </div>
+        </header>
+
+        <div id="catalog-content">
+            <div id="section-recenti" style="display:none;">
+                <div class="section-title"><i class="fas fa-history"></i> Continua a guardare</div>
+                <div class="carousel" id="carousel-recenti"></div>
+            </div>
+            <div class="section-title"><i class="fas fa-fire"></i> Tendenze Film</div>
+            <div class="carousel" id="carousel-movies"></div>
+            <div class="section-title"><i class="fas fa-tv"></i> Serie TV Popolari</div>
+            <div class="carousel" id="carousel-series"></div>
+        </div>
+
+        <div id="search-results" style="display:none;"></div>
+    </div>
+
+    <div id="vix-status">
+        <div class="dot loading" id="vix-dot"></div>
+        <span id="vix-status-text">Verifica disponibilità...</span>
+    </div>
+
+    <div id="view-details" class="view">
+        <button class="back-btn-float focusable" id="btn-back-details" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <img id="dt-backdrop" class="backdrop" src="">
+
+        <div class="details-content">
+            <img id="dt-poster" class="details-poster" src="">
+            <div class="details-info">
+                <h1 id="dt-title">Titolo</h1>
+                <div class="meta">
+                    <span class="tag" style="color: #46d369;"><i class="fas fa-star"></i> <span
+                            id="dt-rating">0.0</span></span>
+                    <span class="tag" id="dt-year">2024</span>
+                    <span class="tag" id="dt-type">Film</span>
+                </div>
+                <p class="overview" id="dt-overview">Trama non disponibile.</p>
+                <div id="dt-extra-info" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:25px;"></div>
+                <div id="action-container"></div>
+            </div>
+        </div>
+
+        <div id="episodes-wrapper" class="episodes-section" style="display:none;">
+            <div class="episodes-header">
+                <h2>Episodi</h2>
+                <div id="season-selector" class="season-select focusable" tabindex="0"></div>
+            </div>
+            <div class="episode-grid" id="episodes-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '56dd0eb5ddacfa471fda68c68a550eb1';
+        const IMG_BASE = 'https://image.tmdb.org/t/p/';
+
+        // ─── Resume watching ──────────────────────────────────────────────────────────
+        let playerStartTime = null;
+        let playerCurrentKey = null;
+
+        function _resumeKey(type, id, season, episode) {
+            return type === 'movie'
+                ? `nz_r_movie_${id}`
+                : `nz_r_tv_${id}_s${season}_e${episode}`;
+        }
+
+        function _getResume(key) {
+            try {
+                const d = JSON.parse(localStorage.getItem(key) || 'null');
+                if (!d) return 0;
+                if (Date.now() - d.ts > 90 * 86400000) { localStorage.removeItem(key); return 0; }
+                return d.t || 0;
+            } catch (e) { return 0; }
+        }
+
+        function _saveResume(key, startedAt) {
+            if (!key || !startedAt) return;
+            const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+            if (elapsed < 10) return;
+            try {
+                const prev = _getResume(key);
+                const newT = prev + elapsed;
+                localStorage.setItem(key, JSON.stringify({ t: newT, ts: Date.now() }));
+                _showResumeToast(`Salvato: ${_fmtTime(newT)}`);
+            } catch (e) { }
+        }
+
+        function _clearResume(key) {
+            try { localStorage.removeItem(key); } catch (e) { }
+        }
+
+        // ─── Cronologia recenti ──────────────────────────────────────────────────────
+        const RECENT_KEY = 'nz_recent';
+        const RECENT_MAX = 20;
+
+        function saveRecent(entry) {
+            // entry = { id, type, name, poster, backdrop, season, episode }
+            try {
+                let list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+                const dedupKey = entry.type === 'movie'
+                    ? `movie_${entry.id}`
+                    : `tv_${entry.id}_s${entry.season}_e${entry.episode}`;
+                list = list.filter(r => r._key !== dedupKey);
+                entry._key = dedupKey;
+                entry.ts = Date.now();
+                list.unshift(entry);
+                if (list.length > RECENT_MAX) list = list.slice(0, RECENT_MAX);
+                localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+            } catch (e) { }
+        }
+
+        function getRecents() {
+            try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); }
+            catch (e) { return []; }
+        }
+
+        // ── FIX 2c: usa item.backdrop (invece di "") per il data-backdrop delle card recenti ──
+        function renderRecentCarousel() {
+            const list = getRecents();
+            const section = document.getElementById('section-recenti');
+            const carousel = document.getElementById('carousel-recenti');
+            if (!section || !carousel) return;
+
+            if (list.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = 'block';
+
+            carousel.innerHTML = list.map(item => {
+                const label = item.type === 'movie'
+                    ? item.name
+                    : `${item.name} · S${item.season} E${item.episode}`;
+                const resumeKey = item.type === 'movie'
+                    ? _resumeKey('movie', item.id, 1, 1)
+                    : _resumeKey('tv', item.id, item.season, item.episode);
+                const t = _getResume(resumeKey);
+                const badge = t > 10
+                    ? `<div class="badge" style="color:#4dc4ff;"><i class="fas fa-history"></i> ${_fmtTime(t)}</div>`
+                    : `<div class="badge"><i class="fas fa-clock"></i></div>`;
+
+                // FIX 2c: data-backdrop ora usa item.backdrop salvato invece di stringa vuota
+                return `
+        <div class="card focusable" tabindex="0"
+             data-id="${item.id}"
+             data-type="${item.type}"
+             data-backdrop="${item.backdrop || ''}"
+             onclick="openDetails('${item.id}', '${item.type}')">
+            ${badge}
+            <img src="${IMG_BASE}w342${item.poster}" loading="lazy">
+            <div class="title">${label}</div>
+        </div>`;
+            }).join('');
+        }
+
+        function _fmtTime(s) {
+            s = Math.floor(s);
+            const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+            return h > 0
+                ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+                : `${m}:${String(sec).padStart(2, '0')}`;
+        }
+
+        let _resumeToastTimer;
+        function _showResumeToast(text) {
+            const t = document.getElementById('resume-toast');
+            const l = document.getElementById('resume-toast-text');
+            if (!t || !l) return;
+            l.textContent = text;
+            t.style.opacity = '1';
+            clearTimeout(_resumeToastTimer);
+            _resumeToastTimer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+        }
+
+        // ─── VixSrc availability ─────────────────────────────────────────────────────
+        let vixAvailableMovies = [];
+        let vixAvailableShows = [];
+        let vixAvailabilityReady = false;
+        let vixFetchFailed = false;
+
+        function proxy(url) {
+            return `https://proxy.alemagno1994alex.workers.dev/?url=${encodeURIComponent(url)}`;
+        }
+
+        function setVixStatus(state, text) {
+            const badge = document.getElementById('vix-status');
+            const dot = document.getElementById('vix-dot');
+            const label = document.getElementById('vix-status-text');
+            dot.className = 'dot ' + state;
+            label.textContent = text;
+            badge.classList.add('visible');
+            if (state !== 'loading') setTimeout(() => badge.classList.remove('visible'), 4000);
+        }
+
+        async function fetchVixAvailability() {
+            if (vixAvailableMovies.length > 0 && vixAvailableShows.length > 0) {
+                vixAvailabilityReady = true;
+                return;
+            }
+            setVixStatus('loading', 'Verifica disponibilità...');
+            try {
+                const res1 = await fetch(proxy('https://vixsrc.to/api/list/movie/?lang=it'), { signal: AbortSignal.timeout(10000) });
+                if (!res1.ok) throw new Error(`Movie list HTTP ${res1.status}`);
+                const movieData = await res1.json();
+                const movieItems = Array.isArray(movieData) ? movieData : (movieData.results || movieData.data || []);
+                vixAvailableMovies = movieItems.map(i => i.tmdb_id ?? i.tmdbId ?? i.tmdb ?? i.id ?? null).filter(id => id !== null).map(Number);
+
+                const res2 = await fetch(proxy('https://vixsrc.to/api/list/tv/?lang=it'), { signal: AbortSignal.timeout(10000) });
+                if (!res2.ok) throw new Error(`TV list HTTP ${res2.status}`);
+                const tvData = await res2.json();
+                const tvItems = Array.isArray(tvData) ? tvData : (tvData.results || tvData.data || []);
+                vixAvailableShows = tvItems.map(i => i.tmdb_id ?? i.tmdbId ?? i.tmdb ?? i.id ?? null).filter(id => id !== null).map(Number);
+
+                vixAvailabilityReady = true;
+                vixFetchFailed = false;
+                setVixStatus('ok', `${vixAvailableMovies.length} film · ${vixAvailableShows.length} serie`);
+            } catch (err) {
+                console.warn('[VixSrc] Impossibile recuperare la lista:', err.message);
+                vixFetchFailed = true;
+                vixAvailabilityReady = true;
+                setVixStatus('error', 'Filtro non disponibile – mostro tutto');
+            }
+        }
+
+        function isAvailableOnVix(id, mediaType) {
+            if (vixFetchFailed) return true;
+            if (!vixAvailabilityReady) return true;
+            const numId = Number(id);
+            if (mediaType === 'movie') return vixAvailableMovies.length === 0 || vixAvailableMovies.includes(numId);
+            else return vixAvailableShows.length === 0 || vixAvailableShows.includes(numId);
+        }
+
+        // ─── App state ───────────────────────────────────────────────────────────────
+        let viewStack = ['catalog'];
+        let activeItemData = null;
+        let currentSeasons = [];
+        let currentSeasonIndex = 0;
+        let currentTvId = null;
+        let catalogScrollPos = 0;
+
+        // ─── Dialog focus trap ───────────────────────────────────────────────────────
+        let activeDialog = null;
+
+        function openDialog(overlayEl, focusFirstId) {
+            activeDialog = overlayEl;
+            document.body.appendChild(overlayEl);
+            setTimeout(() => {
+                const btn = focusFirstId ? document.getElementById(focusFirstId) : overlayEl.querySelector('.focusable');
+                if (btn) setTvFocusInDialog(btn);
+            }, 50);
+        }
+
+        function closeDialog() {
+            if (activeDialog && activeDialog.parentNode) {
+                activeDialog.parentNode.removeChild(activeDialog);
+            }
+            activeDialog = null;
+        }
+
+        function setTvFocusInDialog(element) {
+            if (!element) return;
+            document.querySelectorAll('.tv-focus, .tv-focus-container').forEach(el => {
+                el.classList.remove('tv-focus');
+                el.classList.remove('tv-focus-container');
+            });
+            element.focus();
+            element.classList.add('tv-focus');
+        }
+
+        function moveFocusInDialog(direction) {
+            if (!activeDialog) return;
+            const focusables = Array.from(activeDialog.querySelectorAll('.focusable')).filter(el => {
+                const r = el.getBoundingClientRect();
+                return r.width > 0 && r.height > 0;
+            });
+            if (focusables.length === 0) return;
+
+            const current = activeDialog.querySelector('.tv-focus') || document.activeElement;
+            const currentIndex = focusables.indexOf(current);
+
+            let nextIndex;
+            if (direction === 'DOWN' || direction === 'RIGHT') {
+                nextIndex = (currentIndex + 1) % focusables.length;
+            } else {
+                nextIndex = (currentIndex - 1 + focusables.length) % focusables.length;
+            }
+            setTvFocusInDialog(focusables[nextIndex]);
+        }
+
+        // ── FIX 1: al ritorno al catalogo, ripristina lo sfondo dalla card focalizzata ──
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+
+            if (viewName === 'catalog') {
+                setTimeout(() => {
+                    document.getElementById('view-catalog').scrollTop = catalogScrollPos;
+                    const lastFocused = document.querySelector('#carousel-movies .card.focusable');
+                    if (lastFocused) {
+                        setTvFocus(lastFocused);
+                        // FIX 1: aggiorna lo sfondo con il backdrop della card focalizzata
+                        updateCatalogBg(lastFocused.getAttribute('data-backdrop'));
+                    }
+                }, 100);
+            } else if (viewName === 'details') {
+                document.getElementById('view-details').scrollTop = 0;
+                setTimeout(() => {
+                    const playBtn = document.querySelector('.btn-play');
+                    const seasonSel = document.getElementById('season-selector');
+                    const target = playBtn || (seasonSel && seasonSel.style.display !== 'none' ? seasonSel : null) || document.getElementById('btn-back-details');
+                    setTvFocus(target);
+                }, 100);
+            }
+        }
+
+        function navigateTo(viewName) {
+            if (viewStack[viewStack.length - 1] === 'catalog') {
+                catalogScrollPos = document.getElementById('view-catalog').scrollTop;
+            }
+            if (viewStack[viewStack.length - 1] !== viewName) viewStack.push(viewName);
+            switchView(viewName);
+        }
+
+        // ─── Apre il player in player.html ──────────────────────────────────────────
+        function startPlayer(type, id, season = 1, episode = 1) {
+            const key = _resumeKey(type, id, season, episode);
+            playerCurrentKey = key;
+            const resumeAt = _getResume(key);
+            playerStartTime = Date.now();
+
+            if (activeItemData) {
+                sessionStorage.setItem('returnState', JSON.stringify({
+                    view: 'details',
+                    id: activeItemData.id,
+                    type: activeItemData.media_type,
+                    detailsScrollTop: document.getElementById('view-details').scrollTop
+                }));
+            }
+
+            let url = `player.html?type=${type}&id=${id}`;
+            if (type === 'tv') url += `&season=${season}&episode=${episode}`;
+            if (resumeAt > 10) url += `&startAt=${resumeAt}`;
+            sessionStorage.setItem('resumeSession', JSON.stringify({
+                key: key,
+                startedAt: Date.now()
+            }));
+            window.location.href = url;
+        }
+
+        // ─── Stagioni ────────────────────────────────────────────────────────────────
+        function changeSeason(offset) {
+            let newIndex = currentSeasonIndex + offset;
+            if (newIndex >= 0 && newIndex < currentSeasons.length) {
+                currentSeasonIndex = newIndex;
+                updateSeasonDisplay();
+                loadEpisodes(currentTvId, currentSeasons[currentSeasonIndex].season_number);
+            }
+        }
+
+        function updateSeasonDisplay() {
+            const selector = document.getElementById('season-selector');
+            selector.style.display = 'flex';
+            const sName = currentSeasons[currentSeasonIndex].name || `Stagione ${currentSeasons[currentSeasonIndex].season_number}`;
+            const leftOp = currentSeasonIndex > 0 ? '1' : '0.2';
+            const rightOp = currentSeasonIndex < currentSeasons.length - 1 ? '1' : '0.2';
+            selector.innerHTML = `
+                <i class="fas fa-chevron-left" style="opacity:${leftOp}; padding:10px;" onclick="event.stopPropagation(); changeSeason(-1)"></i>
+                <span style="min-width:130px; text-align:center;">${sName}</span>
+                <i class="fas fa-chevron-right" style="opacity:${rightOp}; padding:10px;" onclick="event.stopPropagation(); changeSeason(1)"></i>
+            `;
+        }
+
+        // ─── Focus management ────────────────────────────────────────────────────────
+        function getFocusableElements() {
+            return Array.from(document.querySelectorAll('.view.active .focusable')).filter(el => {
+                const rect = el.getBoundingClientRect();
+                return rect.width > 0 && rect.height > 0 &&
+                    window.getComputedStyle(el).visibility !== 'hidden' &&
+                    window.getComputedStyle(el).display !== 'none';
+            });
+        }
+
+        function setTvFocus(element) {
+            if (!element) return;
+            document.querySelectorAll('.tv-focus, .tv-focus-container').forEach(el => {
+                el.classList.remove('tv-focus');
+                el.classList.remove('tv-focus-container');
+            });
+            element.focus();
+            element.classList.add('tv-focus');
+            if (element.id === 'search-input') {
+                document.getElementById('search-box-container').classList.add('tv-focus-container');
+            }
+            if (viewStack[viewStack.length - 1] === 'catalog' && element.classList.contains('card')) {
+                updateCatalogBg(element.getAttribute('data-backdrop'));
+            } else if (viewStack[viewStack.length - 1] === 'catalog' && !element.classList.contains('card')) {
+                updateCatalogBg(null);
+            }
+        }
+
+        function moveFocus(direction) {
+            if (activeDialog) {
+                moveFocusInDialog(direction);
+                return;
+            }
+
+            const focusables = getFocusableElements();
+            if (focusables.length === 0) return;
+            let current = document.querySelector('.tv-focus');
+            if (!current || window.getComputedStyle(current).display === 'none') current = document.activeElement;
+
+            if (current.id === 'season-selector') {
+                if (direction === 'LEFT') { changeSeason(-1); return; }
+                if (direction === 'RIGHT') { changeSeason(1); return; }
+                if (direction === 'UP') {
+                    setTvFocus(document.getElementById('btn-back-details'));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
+            }
+
+            if (current.closest('header') && direction === 'DOWN') {
+                const firstCard = document.querySelector('.view.active .carousel .card.focusable') || document.querySelector('.view.active #search-results .card.focusable');
+                if (firstCard) { setTvFocus(firstCard); firstCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); return; }
+            }
+
+            if (current.classList.contains('card') && direction === 'UP') {
+                const rect = current.getBoundingClientRect();
+                if (rect.top < 350) { setTvFocus(document.getElementById('search-input')); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+            }
+
+            if (!focusables.includes(current)) { setTvFocus(focusables[0]); return; }
+
+            const rect = current.getBoundingClientRect();
+            const currentCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            let bestNext = null;
+            let minDistance = Infinity;
+
+            focusables.forEach(el => {
+                if (el === current) return;
+                const r = el.getBoundingClientRect();
+                const center = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+                let isValid = false;
+                if (direction === 'LEFT' && center.x < currentCenter.x - 10 && Math.abs(center.y - currentCenter.y) < r.height) isValid = true;
+                if (direction === 'RIGHT' && center.x > currentCenter.x + 10 && Math.abs(center.y - currentCenter.y) < r.height) isValid = true;
+                if (direction === 'UP' && center.y < currentCenter.y - 10) isValid = true;
+                if (direction === 'DOWN' && center.y > currentCenter.y + 10) isValid = true;
+                if (isValid) {
+                    const dx = center.x - currentCenter.x;
+                    const dy = center.y - currentCenter.y;
+                    const distance = (direction === 'LEFT' || direction === 'RIGHT')
+                        ? Math.abs(dx) + Math.abs(dy) * 5
+                        : Math.abs(dy) + Math.abs(dx) * 5;
+                    if (distance < minDistance) { minDistance = distance; bestNext = el; }
+                }
+            });
+
+            if (bestNext) {
+                const carousel = bestNext.closest('.carousel');
+                if (carousel && (direction === 'LEFT' || direction === 'RIGHT')) {
+                    const cardRect = bestNext.getBoundingClientRect();
+                    const carRect = carousel.getBoundingClientRect();
+                    const scrollOffset = bestNext.offsetLeft - carousel.offsetLeft - (carRect.width / 2) + (cardRect.width / 2);
+                    carousel.scrollTo({ left: scrollOffset, behavior: 'smooth' });
+                }
+                setTvFocus(bestNext);
+                bestNext.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+            } else {
+                const activeView = document.querySelector('.view.active');
+                const SCROLL_STEP = 300;
+                if (direction === 'DOWN') activeView && activeView.scrollBy({ top: SCROLL_STEP, behavior: 'smooth' });
+                else if (direction === 'UP') activeView && activeView.scrollBy({ top: -SCROLL_STEP, behavior: 'smooth' });
+                else if (direction === 'RIGHT') { const fc = current.closest('.carousel'); if (fc) fc.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' }); }
+                else if (direction === 'LEFT') { const fc = current.closest('.carousel'); if (fc) fc.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' }); }
+            }
+        }
+
+        // ─── Back ────────────────────────────────────────────────────────────────────
+        let backCooldown = false;
+
+        function safeGoBack() {
+            if (activeDialog) {
+                closeDialog();
+                setTimeout(() => {
+                    const firstEp = document.querySelector('.ep-card.focusable');
+                    if (firstEp) setTvFocus(firstEp);
+                }, 100);
+                return;
+            }
+
+            if (backCooldown) return;
+            backCooldown = true;
+            setTimeout(() => { backCooldown = false; }, 1000);
+
+            const activeView = document.querySelector('.view.active');
+            const activeId = activeView ? activeView.id : '';
+
+            if (activeId === 'view-details') {
+                document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+                document.getElementById('view-catalog').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('view-catalog').scrollTop = catalogScrollPos;
+                    const lastFocused = document.querySelector('#carousel-movies .card.focusable');
+                    if (lastFocused) {
+                        setTvFocus(lastFocused);
+                        // FIX 1 (anche qui): ripristina sfondo al back manuale
+                        updateCatalogBg(lastFocused.getAttribute('data-backdrop'));
+                    }
+                }, 100);
+                return;
+            }
+        }
+
+        function goBack() { safeGoBack(); }
+
+        // ─── Keyboard ────────────────────────────────────────────────────────────────
+        window.addEventListener('keydown', (e) => {
+            const key = e.keyCode;
+
+            if ([37, 38, 39, 40, 19, 20, 21, 22].includes(key)) {
+                if (!activeDialog && document.activeElement.tagName === 'INPUT' && [37, 39, 21, 22].includes(key)) return;
+                e.preventDefault();
+                if (key === 37 || key === 21) moveFocus('LEFT');
+                if (key === 38 || key === 19) moveFocus('UP');
+                if (key === 39 || key === 22) moveFocus('RIGHT');
+                if (key === 40 || key === 20) moveFocus('DOWN');
+                return;
+            }
+
+            const isBackKey = [27, 461, 10009, 4, 8].includes(key) ||
+                e.key === 'Escape' || e.key === 'Backspace' ||
+                e.key === 'GoBack' || e.key === 'BrowserBack';
+
+            if (isBackKey) {
+                if (!activeDialog && document.activeElement.tagName === 'INPUT' && (key === 8 || e.key === 'Backspace')) return;
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                safeGoBack();
+                return;
+            }
+
+            if ([13, 23, 66].includes(key) || e.key === 'Enter') {
+                if (activeDialog) {
+                    const focusedEl = activeDialog.querySelector('.tv-focus') || document.activeElement;
+                    if (focusedEl && activeDialog.contains(focusedEl)) {
+                        e.preventDefault();
+                        focusedEl.click();
+                        return;
+                    }
+                }
+                const focusedEl = document.querySelector('.tv-focus') || document.activeElement;
+                if (focusedEl && focusedEl.classList.contains('focusable')) {
+                    e.preventDefault();
+                    focusedEl.click();
+                }
+            }
+        }, true);
+
+        // ─── Catalog ─────────────────────────────────────────────────────────────────
+        async function initCatalog() {
+            try {
+                showSkeletons('carousel-movies', 10);
+                showSkeletons('carousel-series', 10);
+
+                const [moviesRes, seriesRes] = await Promise.all([
+                    fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=it-IT`),
+                    fetch(`https://api.themoviedb.org/3/trending/tv/week?api_key=${API_KEY}&language=it-IT`),
+                    fetchVixAvailability()
+                ]);
+
+                const movies = await moviesRes.json();
+                const series = await seriesRes.json();
+
+                renderCarousel('carousel-movies', movies.results, 'movie');
+                renderCarousel('carousel-series', series.results, 'tv');
+                renderRecentCarousel();
+
+                setTimeout(() => {
+                    const firstCard = document.querySelector('#carousel-movies .card.focusable');
+                    if (firstCard) {
+                        setTvFocus(firstCard);
+                        // Inizializza subito lo sfondo alla prima card
+                        updateCatalogBg(firstCard.getAttribute('data-backdrop'));
+                    }
+                }, 500);
+            } catch (e) { console.error("API Error", e); }
+        }
+
+        function showSkeletons(containerId, count) {
+            document.getElementById(containerId).innerHTML = Array(count).fill('<div class="card-skeleton"></div>').join('');
+        }
+
+        const cardBackdrops = {};
+
+        function renderCarousel(containerId, items, defaultType) {
+            const container = document.getElementById(containerId);
+            const html = items
+                .filter(item => item.poster_path)
+                .map(item => {
+                    const type = item.media_type || defaultType;
+                    if (!isAvailableOnVix(item.id, type)) return null;
+                    if (item.backdrop_path) cardBackdrops[item.id] = item.backdrop_path;
+                    return `
+                    <div class="card focusable" tabindex="0"
+                         data-id="${item.id}"
+                         data-type="${type}"
+                         data-backdrop="${item.backdrop_path || ''}"
+                         onclick="openDetails('${item.id}', '${type}')">
+                        <div class="badge"><i class="fas fa-star"></i> ${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}</div>
+                        <img src="${IMG_BASE}w342${item.poster_path}" loading="lazy">
+                        <div class="title">${item.title || item.name}</div>
+                    </div>`;
+                })
+                .filter(Boolean)
+                .join('');
+            container.innerHTML = html || '<p style="color:#666; padding: 0 4%;">Nessun contenuto disponibile.</p>';
+        }
+
+        // ─── Search ──────────────────────────────────────────────────────────────────
+        let debounceTimer;
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const query = e.target.value.trim();
+            const catalogContent = document.getElementById('catalog-content');
+            const searchResults = document.getElementById('search-results');
+
+            if (query.length === 0) {
+                catalogContent.style.display = 'block';
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&language=it-IT&query=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                catalogContent.style.display = 'none';
+                searchResults.style.display = 'grid';
+
+                const validItems = data.results.filter(i =>
+                    i.poster_path &&
+                    (i.media_type === 'movie' || i.media_type === 'tv') &&
+                    isAvailableOnVix(i.id, i.media_type)
+                );
+
+                if (validItems.length > 0) {
+                    renderCarousel('search-results', validItems, 'movie');
+                } else {
+                    searchResults.innerHTML = '<h2 style="grid-column:1/-1; text-align:center; color:#888;">Nessun risultato disponibile su VixSrc.</h2>';
+                }
+            }, 500);
+        });
+
+        // ─── Details ─────────────────────────────────────────────────────────────────
+        function renderExtraInfo(data, type) {
+            const container = document.getElementById('dt-extra-info');
+            container.innerHTML = '';
+            let duration = null;
+            if (type === 'movie' && data.runtime && data.runtime > 0) {
+                const h = Math.floor(data.runtime / 60);
+                const m = data.runtime % 60;
+                duration = h > 0 ? `${h}h ${m}m` : `${m}m`;
+            } else if (type === 'tv' && data.episode_run_time && data.episode_run_time.length > 0) {
+                duration = `~${data.episode_run_time[0]}m / episodio`;
+            }
+            if (duration) container.innerHTML += `<span class="info-chip"><i class="fas fa-clock"></i> ${duration}</span>`;
+            if (type === 'tv' && data.number_of_seasons) container.innerHTML += `<span class="info-chip"><i class="fas fa-layer-group"></i> ${data.number_of_seasons} stagion${data.number_of_seasons === 1 ? 'e' : 'i'}</span>`;
+            if (type === 'tv' && data.number_of_episodes) container.innerHTML += `<span class="info-chip"><i class="fas fa-list"></i> ${data.number_of_episodes} episodi</span>`;
+            if (data.genres && data.genres.length > 0) {
+                data.genres.forEach(g => {
+                    container.innerHTML += `<span class="info-chip genre"><i class="fas fa-tag"></i> ${g.name}</span>`;
+                });
+            }
+        }
+
+        function _refreshButtons(data) {
+            if (!data || data.media_type !== 'movie') return;
+            const id = data.id;
+            const key = _resumeKey('movie', id, 1, 1);
+            const t = _getResume(key);
+            const container = document.getElementById('action-container');
+            if (!container) return;
+
+            if (t > 10) {
+                container.innerHTML = `
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <button class="btn-play focusable" tabindex="0" onclick="startPlayer('movie','${id}')">
+                    <i class="fas fa-play"></i> DALL'INIZIO
+                </button>
+                <button class="btn-play focusable" tabindex="0"
+                    style="background:rgba(0,170,255,0.2);box-shadow:none;border:1px solid rgba(0,170,255,0.4);"
+                    onclick="startPlayer('movie','${id}')">
+                    <i class="fas fa-history"></i> RIPRENDI · ${_fmtTime(t)}
+                </button>
+                <button class="focusable" tabindex="0"
+                    style="background:transparent;color:#666;border:1px solid #333;border-radius:20px;padding:8px 14px;font-size:0.78rem;"
+                    onclick="_clearResume('${key}');_refreshButtons(activeItemData);">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>`;
+            } else {
+                container.innerHTML = `
+            <button class="btn-play focusable" tabindex="0" onclick="startPlayer('movie','${id}')">
+                <i class="fas fa-play"></i> GUARDA
+            </button>`;
+            }
+            setTimeout(() => {
+                const btn = container.querySelector('.btn-play');
+                if (btn) setTvFocus(btn);
+            }, 80);
+        }
+
+        function askResumeEpisode(type, id, season, episode) {
+            const key = _resumeKey(type, id, season, episode);
+            const saved = _getResume(key);
+
+            if (saved > 10) {
+                const overlay = document.createElement('div');
+                overlay.id = 'resume-dialog-overlay';
+
+                overlay.innerHTML = `
+                    <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:16px;
+                                padding:30px 35px;max-width:380px;width:90%;text-align:center;
+                                box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+                        <div style="font-size:2rem;margin-bottom:12px;">▶</div>
+                        <h3 style="font-size:1.2rem;font-weight:800;margin-bottom:8px;">Continua a guardare?</h3>
+                        <p style="color:#888;font-size:0.9rem;margin-bottom:25px;">
+                            Hai guardato fino a <strong style="color:#4dc4ff;">${_fmtTime(saved)}</strong>
+                        </p>
+                        <div style="display:flex;flex-direction:column;gap:12px;">
+                            <button class="focusable" id="btn-resume-ep"
+                                style="background:var(--primary);color:white;border:none;padding:13px 20px;
+                                       border-radius:30px;font-size:1rem;font-weight:800;cursor:pointer;
+                                       display:flex;align-items:center;justify-content:center;gap:8px;">
+                                <i class="fas fa-history"></i> RIPRENDI · ${_fmtTime(saved)}
+                            </button>
+                            <button class="focusable" id="btn-restart-ep"
+                                style="background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.2);
+                                       padding:13px 20px;border-radius:30px;font-size:1rem;font-weight:700;
+                                       cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                                <i class="fas fa-redo"></i> DALL'INIZIO
+                            </button>
+                            <button class="focusable" id="btn-cancel-ep"
+                                style="background:transparent;color:#555;border:none;padding:8px;
+                                       font-size:0.85rem;cursor:pointer;">
+                                Annulla
+                            </button>
+                        </div>
+                    </div>`;
+
+                overlay.querySelector('#btn-resume-ep').onclick = () => {
+                    closeDialog();
+                    startPlayer(type, id, season, episode);
+                };
+
+                overlay.querySelector('#btn-restart-ep').onclick = () => {
+                    _clearResume(key);
+                    closeDialog();
+                    startPlayer(type, id, season, episode);
+                };
+
+                overlay.querySelector('#btn-cancel-ep').onclick = () => {
+                    closeDialog();
+                    setTimeout(() => {
+                        const firstEp = document.querySelector('.ep-card.focusable');
+                        if (firstEp) setTvFocus(firstEp);
+                    }, 100);
+                };
+
+                openDialog(overlay, 'btn-resume-ep');
+
+            } else {
+                startPlayer(type, id, season, episode);
+            }
+        }
+
+        async function openDetails(id, type) {
+            navigateTo('details');
+            document.getElementById('episodes-wrapper').style.display = 'none';
+            document.getElementById('action-container').innerHTML = '';
+
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=it-IT`);
+                const data = await res.json();
+                activeItemData = { ...data, media_type: type };
+
+                // FIX 2a: salva anche backdrop_path nei recenti (film)
+                if (type === 'movie' && data.poster_path) {
+                    saveRecent({
+                        id: data.id, type: 'movie',
+                        name: data.title || data.name,
+                        poster: data.poster_path,
+                        backdrop: data.backdrop_path || ''   // ← aggiunto
+                    });
+                    renderRecentCarousel();
+                }
+
+                document.getElementById('dt-backdrop').src = data.backdrop_path ? `${IMG_BASE}original${data.backdrop_path}` : '';
+                document.getElementById('dt-poster').src = `${IMG_BASE}w500${data.poster_path}`;
+                document.getElementById('dt-title').innerText = data.title || data.name;
+                document.getElementById('dt-rating').innerText = data.vote_average ? data.vote_average.toFixed(1) : 'N/A';
+                document.getElementById('dt-year').innerText = (data.release_date || data.first_air_date || 'N/A').split('-')[0];
+                document.getElementById('dt-type').innerText = type === 'movie' ? 'Film' : 'Serie TV';
+                document.getElementById('dt-overview').innerText = data.overview || 'Trama non disponibile.';
+                renderExtraInfo(data, type);
+
+                if (type === 'movie') {
+                    _refreshButtons(activeItemData);
+                } else {
+                    document.getElementById('episodes-wrapper').style.display = 'block';
+                    currentSeasons = data.seasons.filter(s => s.season_number > 0);
+                    currentTvId = id;
+                    currentSeasonIndex = 0;
+                    if (currentSeasons.length > 0) {
+                        updateSeasonDisplay();
+                        loadEpisodes(id, currentSeasons[0].season_number);
+                        setTimeout(() => setTvFocus(document.getElementById('season-selector')), 300);
+                    } else {
+                        document.getElementById('episodes-grid').innerHTML = '<p>Nessun episodio disponibile.</p>';
+                        document.getElementById('season-selector').style.display = 'none';
+                    }
+                }
+            } catch (e) { console.error("Details Error", e); }
+        }
+
+        async function loadEpisodes(tvId, seasonNum) {
+            const grid = document.getElementById('episodes-grid');
+            grid.innerHTML = '<p style="color:#aaa;">Caricamento episodi...</p>';
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNum}?api_key=${API_KEY}&language=it-IT`);
+                const data = await res.json();
+
+                // FIX 2b: salva backdrop_path della serie per i recenti TV
+                const backdropPath = (activeItemData?.backdrop_path || '');
+
+                grid.innerHTML = data.episodes.map(ep => {
+                    const img = ep.still_path ? `${IMG_BASE}w400${ep.still_path}` : 'https://via.placeholder.com/400x225/222/fff?text=Nessuna+Immagine';
+                    const epKey = _resumeKey('tv', tvId, seasonNum, ep.episode_number);
+                    const epTime = _getResume(epKey);
+                    const badge = epTime > 10
+                        ? `<div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.85);
+                       color:#4dc4ff;font-size:0.72rem;font-weight:800;padding:3px 8px;
+                       border-radius:6px;backdrop-filter:blur(4px);">
+                       ▶ ${_fmtTime(epTime)}</div>`
+                        : '';
+                    const showName = (activeItemData?.name || activeItemData?.title || '').replace(/'/g, "\\'");
+                    const posterPath = (activeItemData?.poster_path || '');
+                    // FIX 2b: aggiunto backdrop nella chiamata saveRecent TV
+                    return `
+            <div class="ep-card focusable" tabindex="0"
+                 onclick="saveRecent({id:'${tvId}',type:'tv',name:'${showName}',poster:'${posterPath}',backdrop:'${backdropPath}',season:${seasonNum},episode:${ep.episode_number}}); renderRecentCarousel(); askResumeEpisode('tv','${tvId}','${seasonNum}','${ep.episode_number}')">
+                <div class="ep-thumb" style="position:relative;">
+                    <img src="${img}" loading="lazy">
+                    ${badge}
+                </div>
+                <div class="ep-info">
+                    <div style="color:var(--primary); font-size:0.8rem; font-weight:800; margin-bottom:5px;">Episodio ${ep.episode_number}</div>
+                    <div class="ep-title">${ep.name}</div>
+                    <div class="ep-desc">${ep.overview || '...'}</div>
+                </div>
+            </div>`;
+                }).join('');
+            } catch (e) { grid.innerHTML = '<p>Errore.</p>'; }
+        }
+
+        // ─── Catalog background ──────────────────────────────────────────────────────
+        function updateCatalogBg(backdropPath) {
+            const bg = document.getElementById('catalog-bg');
+            if (!bg) return;
+            if (!backdropPath) { bg.style.opacity = '0'; return; }
+            const url = `${IMG_BASE}original${backdropPath}`;
+            const img = new Image();
+            img.onload = () => { bg.style.backgroundImage = `url('${url}')`; bg.style.opacity = '1'; };
+            img.src = url;
+        }
+
+        // ─── Logo ────────────────────────────────────────────────────────────────────
+        function createLogo() {
+            const header = document.querySelector('header');
+            if (!header) return;
+            const logoContainer = document.createElement('div');
+            logoContainer.id = 'nerozone-logo';
+            Object.assign(logoContainer.style, {
+                display: 'flex', alignItems: 'center', gap: '6px',
+                fontSize: '2rem', fontWeight: '900', cursor: 'pointer', padding: '10px'
+            });
+            const gradient = 'linear-gradient(45deg, #00aaff, #4dc4ff, #80e0ff)';
+            const nero = document.createElement('span');
+            nero.textContent = 'NeroZoneVod';
+            Object.assign(nero.style, {
+                background: gradient,
+                webkitBackgroundClip: 'text',
+                webkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                filter: 'drop-shadow(0 0 10px rgba(0,170,255,0.5))'
+            });
+            const vod = document.createElement('img');
+            vod.src = "https://github.com/alemagno1994alex-glitch/autoupdate/blob/main/images/logo.png?raw=true";
+            vod.alt = '';
+            Object.assign(vod.style, { height: '45px', marginLeft: '4px', transform: 'translateY(3px)', filter: 'drop-shadow(0 0 10px rgba(0,170,255,0.6))' });
+            logoContainer.appendChild(nero);
+            logoContainer.appendChild(vod);
+            header.insertBefore(logoContainer, header.firstChild);
+        }
+
+        // ─── Ripristina la schermata al ritorno dal player ───────────────────────────
+        async function restoreStateIfNeeded() {
+            const raw = sessionStorage.getItem('returnState');
+            const rawResume = sessionStorage.getItem('resumeSession');
+            if (rawResume) {
+                sessionStorage.removeItem('resumeSession');
+                try {
+                    const rs = JSON.parse(rawResume);
+                    if (rs.key && rs.startedAt) _saveResume(rs.key, rs.startedAt);
+                } catch (e) { }
+            }
+            if (!raw) return false;
+            sessionStorage.removeItem('returnState');
+            try {
+                const state = JSON.parse(raw);
+                if (state.view === 'details' && state.id && state.type) {
+                    await openDetails(state.id, state.type);
+                    setTimeout(() => {
+                        document.getElementById('view-details').scrollTop = state.detailsScrollTop || 0;
+                    }, 150);
+                    return true;
+                }
+            } catch (e) { }
+            return false;
+        }
+
+        createLogo();
+        restoreStateIfNeeded().then(restored => {
+            if (!restored) initCatalog();
+            else initCatalog();
+        });
+    </script>
+
+    <div id="resume-toast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+    background:rgba(10,10,10,0.92);border:1px solid rgba(0,170,255,0.35);border-radius:10px;
+    padding:11px 22px;font-size:0.85rem;color:#4dc4ff;backdrop-filter:blur(12px);
+    opacity:0;pointer-events:none;transition:opacity 0.4s ease;white-space:nowrap;
+    z-index:99999;display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-bookmark"></i><span id="resume-toast-text"></span>
+    </div>
+
+</body>
+
+</html>
